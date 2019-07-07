@@ -1,5 +1,3 @@
-#' Performs the shape change detection in a single command
-#'
 #' This function is a wrapper of the necessary functions to detect RNA-seq shape
 #' changes at a single gene in a single command.
 #'
@@ -21,7 +19,8 @@
 #' @param reducedReturn
 #'
 #' @export
-Scissor = function(pileup, exon, siglev=1e-4, logshiftVal=NULL, windowSize=50,
+Scissor = function(pileup, exon, gene=NULL,
+                   siglev=1e-4, logshiftVal=NULL, windowSize=50,
                    inputType="part_intron", outputType="part_intron",
                    plotNormalization=TRUE,
                    reducedReturn=FALSE) {
@@ -33,35 +32,36 @@ Scissor = function(pileup, exon, siglev=1e-4, logshiftVal=NULL, windowSize=50,
                               logshiftVal=logshiftVal,
                               inputType=inputType,
                               outputType=outputType,
-                              plotNormalization=plotNormalization)
+                              plotNormalization=plotNormalization,gene=gene)
 
   logshiftVal = data.process$logshiftVal  # log shift parameter
-  exonset = dai$epm  # exon boundaries in data
+  exonset = data.process$dai$epm  # exon boundaries in data
   cat(paste0("     Log shift parameter used  = ",logshiftVal),"\n")
 
   ##---------------------------------------
   ##          Detect outliers
   ##---------------------------------------
   ## Step 1: Glocal shape change detection
-  GSCout = miscGlobal(inputData=data.process$normalizedData,siglev=siglev,
-                        PCnum=NULL,eps=NULL,maxPCnum=10,
-                        ADcutoff=3,reducedReturn=reducedReturn)
+  GSCout = miscGlobal(inputData=data.process$normalizedData,
+                      siglev=siglev,ADcutoff=3,
+                      PCnum=NULL,maxPCnum=10,
+                      reducedReturn=reducedReturn)
 
-  globalSC = GSCout$outliers.sort
-  cat(paste0("     # Global Shape Changes identified  = ",length(globalSC)),"\n")
+  cat(paste0("     # Global Shape Changes identified  = ",length(GSCout$SC)),"\n")
 
   ## Step 2: Local shape change detection
-  LSCout = miscLocal(miscGlobalobj=GSCout,
+  LSCout = miscLocal(miscGlobalResult=GSCout,
                        countData=data.process$countData,exonset=exonset,
                        siglev=siglev,cutoff=NULL,ADcutoff=3,
                        windowSize=windowSize,reducedReturn=reducedReturn)
-  localSC = LSCout$outliers.sort
-  cat(paste0("     # Local Shape Changes identified   = ",length(localSC)),"\n")
+  cat(paste0("     # Local Shape Changes identified   = ",length(LSCout$SC)),"\n")
 
-  return(list(SC=c(globalSC,localSC), globalSC=globalSC, localSC=localSC,
-              GSCout=GSCout, LSCout=LSCout,
-              countData=data.process$countData,
-              logData=data.process$logData,
-              normalizedData=data.process$normalizedData,
-              dai=data.process$dai,msf=data.process$msf,logshiftVal=logshiftVal))
+  outputObject = list(SC=c(GSCout$SC,LSCout$SC), globalSC=GSCout$SC, localSC=LSCout$SC,
+                      GSCout=GSCout, LSCout=LSCout,
+                      countData=data.process$countData,
+                      logData=data.process$logData,
+                      normalizedData=data.process$normalizedData,
+                      dai=data.process$dai,msf=data.process$msf,logshiftVal=logshiftVal)
+  class(outputObject) = append(class(outputObject),"ScissorOutput")
+  return(outputObject)
 }
