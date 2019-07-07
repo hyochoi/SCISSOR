@@ -17,8 +17,8 @@
 #'   large matrices. Default is TRUE.
 #'
 #' @export
-miscGlobal = function(inputData,siglev=1e-5,ADcutoff=3,
-                      PCnum=NULL,maxPCnum=20,
+miscGlobal = function(inputData,siglev=1e-4,ADcutoff=3,
+                      PCnum=NULL,maxPCnum=10,
                       reducedReturn=TRUE) {
 
   d = nrow(inputData); n = ncol(inputData);
@@ -52,12 +52,15 @@ miscGlobal = function(inputData,siglev=1e-5,ADcutoff=3,
   }
 
   if (reducedReturn) {
-    return(list(OS=out$OS,OSpval=out$OSpval,NPS=NULL,MOD=NULL,cutoff=cutoff,
-                outliers=out$outliers,outOS=out$outOS,outliers.sort=out$outliers.sort,outOS.sort=out$outOS.sort,
-                pca=NULL,residualData=residualData,K=out$K));
+    outputObject = list(OS=out$OS,OSpval=out$OSpval,NPS=NULL,MOD=NULL,cutoff=cutoff,
+                        SC=out$outliers.sort,
+                        pcaResults=NULL,residualData=residualData,K=out$K)
   } else {
-    return(list(OS=out$OS,OSpval=out$OSpval,NPS=out$NPS,MOD=MOD,cutoff=cutoff,
-                outliers=out$outliers,outOS=out$outOS,outliers.sort=out$outliers.sort,outOS.sort=out$outOS.sort,
-                pca=z.pca,residualData=residualData,K=out$K));
+    outputObject = list(OS=out$OS,OSpval=out$OSpval,NPS=out$NPS,MOD=MOD,cutoff=cutoff,
+                        SC=out$outliers.sort,
+                        pcaResults=z.pca,residualData=residualData,K=out$K,
+                        resultsType="GSCResults")
   }
+  class(outputObject) = append(class(outputObject),"GSCOutput")
+  return(outputObject)
 }
