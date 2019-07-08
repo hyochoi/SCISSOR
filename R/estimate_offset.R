@@ -1,15 +1,21 @@
 #'
 #' @export
-estimate_offset = function(data.centered=NULL,
+estimate_offset = function(centerDataResult=NULL,msf=NULL,centeredData=NULL,
                            pileup,exonset,
                            smoothness=0.7,
                            makePlot=FALSE, ...) {
 
-  msf = data.centered$msf;
-  cenmat = data.centered$outputData;
+  if (is.null(centerDataResult)) {
+    if ((is.null(msf)) | (is.null(centeredData))) {
+      stop("either of msf or centered matrix should be specified.")
+    }
+  } else {
+    msf = centerDataResult$msf;
+    centeredData = centerDataResult$outputData;
+  }
 
-  n=ncol(cenmat);
-  case.sse = apply(cenmat,2,FUN=bisquare.sse)
+  n=ncol(centeredData);
+  case.sse = apply(centeredData,2,FUN=bisquare.sse)
   exonbase = c()
   for (j in 1:nrow(exonset)) {
     exonbase = c(exonbase,c(exonset[j,2]:exonset[j,3]))
@@ -81,22 +87,22 @@ estimate_offset = function(data.centered=NULL,
   return(list(g=g,msf=msf,sse=case.sse.adj,goodcase=goodcase,
               lowess.fit=lowess2,smoothness=smoothness))
 }
-# estimate_offset = function(data.centered=NULL,msf=NULL,cenmat=NULL,
+# estimate_offset = function(centerDataResult=NULL,msf=NULL,centeredData=NULL,
 #                            rawmat,exonset,
 #                            smoothness=0.7,makePlot=FALSE,main="Gene") {
 #
-#   if (is.null(data.centered)) {
-#     if ((is.null(msf)) | (is.null(cenmat))) {
-#       stop("either of msf or cenmat should be specified.")
+#   if (is.null(centerDataResult)) {
+#     if ((is.null(msf)) | (is.null(centeredData))) {
+#       stop("either of msf or centeredData should be specified.")
 #     }
 #     medscale=msf;
 #   } else {
-#     medscale = data.centered$msf;
-#     cenmat = data.centered$outdata;
+#     medscale = centerDataResult$msf;
+#     centeredData = centerDataResult$outdata;
 #   }
 #
-#   n=ncol(cenmat);
-#   case.sse = apply(cenmat,2,FUN=bisquare.sse)
+#   n=ncol(centeredData);
+#   case.sse = apply(centeredData,2,FUN=bisquare.sse)
 #   exonbase = c()
 #   for (j in 1:nrow(exonset)) {
 #     exonbase = c(exonbase,c(exonset[j,2]:exonset[j,3]))
