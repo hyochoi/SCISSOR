@@ -13,6 +13,6 @@ logtransform_data = function(inputData, logshiftVal=NULL, param.grid=NULL, draw.
   if (is.null(logshiftVal)) {
     logshiftVal = getShiftParam(X=inputData, param.grid=param.grid, draw.plot=draw.plot)$optim.param
   }
-  outputData = log10(data + logshiftVal) - log10(logshiftVal) ;
+  outputData = log10(inputData + logshiftVal) - log10(logshiftVal) ;
   return(list(outputData=outputData,logshiftVal=logshiftVal))
 }
