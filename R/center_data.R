@@ -4,8 +4,8 @@
 #' a new data object
 #'
 #' @export
-center_data = function(inputData, ...) {
-  msfres = scale.factor(X=inputData, ...)
+center_data = function(inputData, robustLM=FALSE, ...) {
+  msfres = scale.factor(X=inputData, robustLM=robustLM, ...)
   data.center = msfres$mean.vec
   msf=msfres$msf
   msf2=rep(1,length(msf))
