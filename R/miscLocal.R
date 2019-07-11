@@ -15,8 +15,10 @@
 #' @param reducedReturn
 #'
 #' @export
-miscLocal = function(miscGlobalResult,countData,exonset,ADcutoff=3,windowSize=100,
-                     siglev=1e-5,cutoff=NULL,reducedReturn=TRUE) {
+miscLocal = function(miscGlobalResult,countData,exonset,
+                     siglev=1e-4,cutoff=NULL,
+                     ADcutoff=3,windowSize=100,
+                     reducedReturn=TRUE) {
   n = ncol(miscGlobalResult$residualData); d = nrow(miscGlobalResult$residualData);
   if (nrow(exonset)==1) {
     exon.base=c(exonset[1,2]:exonset[1,3])
@@ -27,7 +29,7 @@ miscLocal = function(miscGlobalResult,countData,exonset,ADcutoff=3,windowSize=10
     }
   }
 
-  out1 = miscGlobalResult$outliers;
+  out1 = miscGlobalResult$SC;
   residualData2 = miscGlobalResult$residualData[,which(! c(1:n) %in% out1)]
   countData2 = countData[,which(! c(1:n) %in% out1)]
   MOD=matrix(0,nrow=d,ncol=n)
@@ -39,9 +41,14 @@ miscLocal = function(miscGlobalResult,countData,exonset,ADcutoff=3,windowSize=10
     cutoff=0
     residualData_out=NULL
   } else {
-    residualData_out = detect_localout(residualData=residualData2,countData=countData2,exonset=exonset,
-                                 windowSize=windowSize,readconstr=readconstr,
-                                 siglev=siglev,cutoff=cutoff,reducedReturn=reducedReturn)
+    residualData_out = detect_localout(residualData=residualData2,
+                                       countData=countData2,
+                                       exonset=exonset,
+                                       siglev=siglev,
+                                       cutoff=cutoff,
+                                       ADcutoff=ADcutoff,
+                                       windowSize=windowSize,
+                                       reducedReturn=reducedReturn)
 
     changeID = Relist.hy(1:n,out1);
     out2 = changeID$new[residualData_out$outliers];
@@ -56,16 +63,17 @@ miscLocal = function(miscGlobalResult,countData,exonset,ADcutoff=3,windowSize=10
       NPS = NPS
     }
     cutoff = residualData_out$cutoff;
-    out2stat = residualData_out$onoff_stat;
-    OS[which(! c(1:n) %in% out1)] = out2stat;
+    OS[which(! c(1:n) %in% out1)] = residualData_out$onoff_stat;
   }
 
-
-  return(list(outliers=out2,outliers.sort=out2.sort,
-              out2stat=out2stat,
-              cutoff=cutoff,ks.df=residualData_out$ks.df,ks.pval=residualData_out$ks.pval,
-              MOD=MOD,NPS=NPS,OS=OS,
-              out2res=residualData_out));
+  outputObject = list(SC=out2.sort,OS=OS,
+                      MOD=MOD,NPS=NPS,
+                      cutoff=cutoff,
+                      ignoredCases=out1,
+                      ks.df=residualData_out$ks.df,ks.pval=residualData_out$ks.pval,
+                      onoffResults=residualData_out)
+  class(outputObject) = append(class(outputObject),"LSCOutput")
+  return(outputObject)
 }
 
 #' Detect local shape outliers with a residual matrix
@@ -75,8 +83,9 @@ miscLocal = function(miscGlobalResult,countData,exonset,ADcutoff=3,windowSize=10
 #'
 #' @export
 detect_localout = function(residualData,countData,exonset,
-                           windowSize=100,ADcutoff=3,
-                           siglev=NULL,cutoff=NULL,reducedReturn=FALSE) {
+                           siglev=NULL,cutoff=NULL,ADcutoff=3,
+                           windowSize=100,
+                           reducedReturn=FALSE) {
 
   n2=ncol(residualData)
   onoff_res=as.list(NULL)
