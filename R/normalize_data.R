@@ -14,17 +14,29 @@
 #' @keywords
 #' @export
 #' @examples
-normalize_data = function(inputData,pileup,exonset,
+normalize_data = function(inputData,
+                          pileup,exonset,
                           smoothness=0.7,
-                          makePlot=FALSE, ...) {
+                          makePlot=FALSE, gene=NULL, ...) {
 
-  data.centered = center_data(inputData=inputData)
-  g1.offset = estimate_offset(data.centered=data.centered,pileup=pileup,
+  centerDataResult = center_data(inputData=inputData)
+  g1.offset = estimate_offset(centerDataResult=centerDataResult,
+                              msf=NULL,centeredData=NULL,
+                              pileup=pileup,
                               exonset=exonset,
                               smoothness=smoothness,makePlot=FALSE)
-  msf = data.centered$msf
-  datactr = sweep(x=data.centered$outputData,2,g1.offset$g,FUN="/")
+  msf = centerDataResult$msf
+  normalizedData = sweep(x=centerDataResult$outputData,2,g1.offset$g,FUN="/")
   goodcase = g1.offset$goodcase
+  if (makePlot) {
+    if (is.null(gene)) {
+      plot_offset(offset.obj=g1.offset,draw.legend=T,
+                  main="Before normalization",...)
+    } else {
+      plot_offset(offset.obj=g1.offset,draw.legend=T,
+                  main=paste0(gene," | Before normalization"),...)
+    }
+  }
 
   ## loop until no different variations
   if (sum((g1.offset$g-1)^2)<1e-10) {
@@ -35,19 +47,26 @@ normalize_data = function(inputData,pileup,exonset,
     g2.offset = g1.offset
     k = 1
     while ((k<5) & (max(g2.offset$g)>1.05)) {
-      g2.offset = estimate_offset(msf=msf,cenmat=datactr,rawmat=rawmat,exonset=exonset,
-                                  smoothness=smoothness,makePlot=F)
-      datactr = sweep(x=datactr,2,g2.offset$g,FUN="/")
+      g2.offset = estimate_offset(centerDataResult=NULL,
+                                  msf=msf,centeredData=normalizedData,
+                                  pileup=pileup,
+                                  exonset=exonset,
+                                  smoothness=smoothness,makePlot=FALSE)
+      normalizedData = sweep(x=normalizedData,2,g2.offset$g,FUN="/")
       k = k+1
     }
     if (makePlot) {
-      plot_offset(offset.obj=g1.offset,draw.legend=T,
-                  main=paste(GeneName,": before normalization"))
-      plot_offset(offset.obj=g2.offset,draw.legend=T,
-                  main=paste(GeneName,": after normalization"))
+      if (is.null(gene)) {
+        plot_offset(offset.obj=g2.offset,draw.legend=T,
+                    main="After normalization",...)
+      } else {
+        plot_offset(offset.obj=g2.offset,draw.legend=T,
+                    main=paste0(gene," | After normalization"),...)
+      }
     }
 
   }
-  return(list(outputData=datactr,msf=msf,g1.offset=g1.offset,g2.offset=g2.offset,
-              data.center=data.centered$data.center,goodcase=goodcase))
+  return(list(outputData=normalizedData,msf=msf,
+              g1.offset=g1.offset,g2.offset=g2.offset,
+              goodcase=goodcase))
 }
