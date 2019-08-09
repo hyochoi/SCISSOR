@@ -10,6 +10,7 @@
 #' @param smoothness
 #' @param makePlot logical, whether to plot variation with respect to overall expression with fitted curve.
 #' Default is FALSE
+#' @param gene gene name to print in the plot
 #'
 #' @keywords
 #' @export

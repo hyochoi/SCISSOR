@@ -23,6 +23,7 @@ annotate_pileup = function(pileup,exon,
     if (outputType=="whole_intron") {
       ep.new = find.exon.hy(exon,is.intron=TRUE,num.intron=NULL) ;
       output = pileup;
+      intron.len=NULL
     } else if (outputType=="part_intron") {
       intron.len = ceiling(len.intron.hy(exon=exon)*0.5);
       ep.new = find.exon.hy(exon,is.intron=TRUE,num.intron=intron.len) ;
