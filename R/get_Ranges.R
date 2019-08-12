@@ -19,22 +19,26 @@ get_Ranges = function(regions) {
 
   intron.len = ceiling(len.intron.hy(exon=regions)*0.5);
   ep.new = find.exon.hy(regions,is.intron=TRUE,num.intron=intron.len) ;
-  lRanges=ep.new$ep
-  gRanges=cbind(strtend.num[,1]-(lRanges[,2]-lRanges[,1]),strtend.num,strtend.num[,2]+(lRanges[,4]-lRanges[,3]))
-  new.Ranges=paste0(chr,":",paste(apply(gRanges[,c(1,4)],1,function(x) paste(x,collapse="-")),collapse=","),":",strnd)
+  lRanges0=ep.new$ep
+  gRanges0=cbind(strtend.num[,1]-(lRanges0[,2]-lRanges0[,1]),strtend.num,strtend.num[,2]+(lRanges0[,4]-lRanges0[,3]))
+  new.regions=paste0(chr,":",paste(apply(gRanges0[,c(1,4)],1,function(x) paste(x,collapse="-")),collapse=","),":",strnd)
 
   if (strnd=="+") {
+    gRanges=gRanges0
+    lRanges=lRanges0
     colnames(gRanges)=c("ip.start","e.start","e.end","ip.end") # e:exon; ip: intronic part;
     rownames(gRanges)=paste("exon",1:nrow(gRanges),sep="")
     colnames(lRanges)=c("ip.start","e.start","e.end","ip.end")
     rownames(lRanges)=paste("exon",1:nrow(gRanges),sep="")
   } else {
-    colnames(gRanges)=rev(c("ip.start","e.start","e.end","ip.end"))
-    rownames(gRanges)=rev(paste("exon",1:nrow(gRanges),sep=""))
-    colnames(lRanges)=rev(c("ip.start","e.start","e.end","ip.end") )
-    rownames(lRanges)=rev(paste("exon",1:nrow(gRanges),sep=""))
+    gRanges=gRanges0[rev(1:nrow(gRanges0)),rev(1:4)]
+    lRanges=max(lRanges0)-lRanges0[rev(1:nrow(lRanges0)),rev(1:4)]+1
+    colnames(gRanges)=c("ip.start","e.start","e.end","ip.end") # e:exon; ip: intronic part;
+    rownames(gRanges)=paste("exon",1:nrow(gRanges),sep="")
+    colnames(lRanges)=c("ip.start","e.start","e.end","ip.end")
+    rownames(lRanges)=paste("exon",1:nrow(gRanges),sep="")
   }
-
-  output=list(gRanges=gRanges,lRanges=lRanges,chr=chr,strand=strnd,regions=regions,new.Ranges=new.Ranges)
+  rm(lRanges0,gRanges0)
+  output=list(gRanges=gRanges,lRanges=lRanges,chr=chr,strand=strnd,regions=regions,new.regions=new.regions)
   output
 }
