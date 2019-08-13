@@ -3,20 +3,38 @@
 #' Get genomic ranges and locus ranges from the regions provided
 #'
 #' @param regions genomic regions formatted as chr1:1-100,200-300:+"
+#' @param outputType type of intronic region that will be included in output,
+#'   with choices "whole_intron", "part_intron", or "only_exon"; the second is
+#'   the default.
 #' @examples
 #' regions="chr17:7571720-7573008,7573927-7574033,7576525-7576657,7576853-7576926,7577019-7577155,7577499-7577608,7578177-7578289,7578371-7578554,7579312-7579590,7579700-7579721,7579839-7579940:-"
 #' Ranges=get_Ranges(regions=regions)
 #'
 #' @import BiocManager Rsamtools
 #' @export
-get_Ranges = function(regions) {
+get_Ranges = function(Gene=NULL,regions,outputType="part_intron") {
   require(Rsamtools)
+
+  if (missing(regions)) {
+    stop("regions must be specified")
+  }
+  if (is.null(Gene)) {
+    warning("The gene name is missing")
+  }
   chr = strsplit(regions,":")[[1]][1]
   strtend = do.call(rbind,strsplit(strsplit(strsplit(regions,":")[[1]][2],",")[[1]],"-"))
   strnd = strsplit(regions,":")[[1]][3]
-  df = GRanges(chr,IRanges(start=as.numeric(strtend[,1]), end=as.numeric(strtend[,2])),strnd)
   strtend.num=matrix(as.numeric(strtend),ncol=2)
 
+  if (outputType=="whole_intron") {
+    ep.new = find.exon.hy(regions,is.intron=TRUE,num.intron=NULL) ;
+  } else if (outputType=="part_intron") {
+    intron.len = ceiling(len.intron.hy(exon=regions)*0.5);
+    ep.new = find.exon.hy(regions,is.intron=TRUE,num.intron=intron.len) ;
+  } else if (outputType=="only_exon") {
+    intron.len = ceiling(len.intron.hy(exon=regions)*0.5);
+    ep.new = find.exon.hy(regions,is.intron=TRUE,num.intron=0) ;
+  }
   intron.len = ceiling(len.intron.hy(exon=regions)*0.5);
   ep.new = find.exon.hy(regions,is.intron=TRUE,num.intron=intron.len) ;
   lRanges0=ep.new$ep
@@ -38,7 +56,7 @@ get_Ranges = function(regions) {
     colnames(lRanges)=c("ip.start","e.start","e.end","ip.end")
     rownames(lRanges)=paste("exon",1:nrow(gRanges),sep="")
   }
-  rm(lRanges0,gRanges0)
-  output=list(gRanges=gRanges,lRanges=lRanges,chr=chr,strand=strnd,regions=regions,new.regions=new.regions)
+  rm(gRanges0,lRanges0)
+  output=list(Gene=Gene,gRanges=gRanges,lRanges=lRanges,chr=chr,strand=strnd,regions=regions,new.regions=new.regions)
   output
 }
