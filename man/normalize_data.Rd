@@ -4,20 +4,20 @@
 \alias{normalize_data}
 \title{Normalizing log data}
 \usage{
-normalize_data(inputData, pileup, exonset, smoothness = 0.7,
-  makePlot = FALSE, gene = NULL, ...)
+normalize_data(inputData, pileupData, Ranges, smoothness = 0.7,
+  makePlot = FALSE, ...)
 }
 \arguments{
 \item{inputData}{log-transformed data matrix (e.g. object from \link{logtransform_data})}
 
-\item{pileup}{raw coverage data matrix}
-
-\item{exonset}{exon/intron annotation matrix from \link{process_data}}
+\item{pileupData}{raw coverage data matrix}
 
 \item{makePlot}{logical, whether to plot variation with respect to overall expression with fitted curve.
 Default is FALSE}
 
-\item{gene}{gene name to print in the plot}
+\item{exonset}{exon/intron annotation matrix from \link{process_data}}
+
+\item{Gene}{gene name to print in the plot}
 }
 \description{
 This function reduces the variation associated with sequentcing depths
