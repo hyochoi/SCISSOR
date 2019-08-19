@@ -20,8 +20,10 @@
 #'   on the scale of the \code{Pileup}. If your data is not log-scale, use NULL.
 #' @param plot.meanpileup a logical value indicating whether the mean coverage
 #'   should be drawn. Default is TRUE.
-#' @param col.pileup colors for the pileup samples.
-#' @param col.meanpileup a color for the mean coverage. Defult is "darkgrey".
+#' @param col.pileup colors for the pileup samples
+#' @param col.meanpileup a color for the mean coverage. Defult is "darkgrey"
+#' @param print.ranges a logical value indicating whether genomic ranges and
+#'   locus ranges (\code{\link{get_Ranges}}) should be printed in x-axis.
 #' @param ... other graphical parameters passed to \code{points}.
 #'
 #' @keywords
@@ -37,6 +39,7 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
                        plot.meanpileup=TRUE,
                        col.pileup=NULL,col.meanpileup="grey",
                        title=NULL,cex.title=1.5,
+                       print.ranges=TRUE,
                        xlim=NULL,ylim=NULL,xlab=NULL,ylab=NULL,...) {
 
   ##  % needed variables
@@ -62,18 +65,6 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
   candicol3 = brewer.pal(8,"Pastel2") # candidiate colors for regions with shape changes
   candicol = c(candicol2,candicol3);
   exon.col = candicol1[9]
-
-  if (!is.null(logcount)) {
-    if (logcount==1) {
-      labels = c(1,5,10,50,100,300,500,1000,2000,5000,10000,15000,20000,25000)
-    } else {
-      labels = c(5,10,50,100,300,500,1000,2000,5000,10000,15000,20000,25000)
-    }
-    tick.at = log10(labels+logcount)-log10(logcount);
-  } else {
-    tick.at = NULL;
-    labels = TRUE;
-  }
 
   # Set plot parameters
   if (is.null(xlim)) xlim = c(0,nrow(Pileup))
@@ -108,7 +99,11 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
   }
 
   # Start plotting
-  par(mar=c(3,3,3,1))
+  if (print.ranges) {
+    par(mar=c(5,3,3,1))
+  } else {
+    par(mar=c(3,3,3,1))
+  }
   meanPileup = apply(Pileup, 1, median) ;
   plot(meanPileup, type='l', lty=2, lwd=0.5, ylim=c(min(0,ylim[1]),ylim[2]),
        xlim=xlim, axes=F, ylab=NA, xlab=NA, xaxs="i",yaxs="i", col="white") ;
@@ -118,24 +113,40 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
   abline(v=exons[,1],lty=1,col="lightyellow3",lwd=0.1) ;
   abline(v=exons[,2],lty=1,col="lightyellow3",lwd=0.1) ;
   title(plot.title, cex.main=cex.title,font.main=1,line=0.5);
-  axis(side=1, tck=-0.01, labels=NA) ;
-  axis(side=1, lwd=0, line=-0.8, cex.axis=0.9,col.axis="darkgrey") ;
-  # axis(side=2, tck=-0.01, at=tick.at, labels=labels, col.ticks="darkgrey",col.axis="white") ;
+
+  if (print.ranges) {
+    x.tick.at = c(1,Ranges$lRanges[2:nrow(Ranges$lRanges),2],max(Ranges$lRanges))
+    x.labels.l = c(Ranges$Gene,Ranges$lRanges[2:nrow(Ranges$lRanges),2],max(Ranges$lRanges))
+    x.labels.g = c(Ranges$chr,Ranges$gRanges[2:nrow(Ranges$gRanges),2],max(Ranges$gRanges))
+    axis(side=1, tck=-0.01, at=x.tick.at, labels=NA, col.ticks="darkgrey") ;
+    axis(side=1, lwd=0, line=-1, cex.axis=0.8,col.axis="darkgrey",
+         at=x.tick.at,labels=x.labels.l) ;
+    axis(side=1, lwd=0, line=-0.1, cex.axis=0.8,col.axis="darkgrey",
+         at=x.tick.at,labels=x.labels.g) ;
+    mtext(side=1, xlab, line=2.5, cex=1) ;
+  } else {
+    mtext(side=1, xlab, line=1, cex=1)
+  }
+  if (!is.null(logcount)) {
+    if (logcount==1) {
+      labels = c(1,5,10,50,100,300,500,1000,2000,5000,10000,15000,20000,25000)
+    } else {
+      labels = c(5,10,50,100,300,500,1000,2000,5000,10000,15000,20000,25000)
+    }
+    tick.at = log10(labels+logcount)-log10(logcount);
+  } else {
+    tick.at = NULL;
+    labels = TRUE;
+  }
   axis(side=2, tck=-0.02, at=tick.at, col.ticks="darkgrey",las=1,
        labels=labels,lwd=0,line=-0.8,cex.axis=0.8,col.axis="darkgrey")
-
-  # axis(side=2,at=pretty(dens$y)/max(dens$y)*0.95,labels=pretty(dens$y),
-  #      cex=0.2,lwd=0,line=-0.5,tck=-0.015)
+  mtext(side=2, ylab, line=1.5, cex=1) ;
 
   box(lwd=1.5)
-  # axis(side=2,lwd=0,line=-0.5,cex.axis=0.9) ;
-  # axis(side=2, lwd=0, line=-0.5, cex.axis=0.9) ;
   if (plot.meanpileup){
     points(meanPileup, type='l', lty=1, lwd=2, col=col.meanpileup) ;
   }
   for (case in cases) {
     points(Pileup[,case], type='l', lty=1, lwd=1.5, col=colset[case], ...) ;
   }
-  mtext(side=1, xlab, line=1.5, cex=1) ;
-  mtext(side=2, ylab, line=1.5, cex=1) ;
 }
