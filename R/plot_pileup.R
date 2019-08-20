@@ -129,9 +129,9 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
   }
   if (!is.null(logcount)) {
     if (logcount==1) {
-      labels = c(1,5,10,50,100,300,500,1000,2000,5000,10000,15000,20000,25000)
+      labels = c(1,5,10,50,100,300,500,1000,2000,5000,10000,15000,20000,30000)
     } else {
-      labels = c(5,10,50,100,300,500,1000,2000,5000,10000,15000,20000,25000)
+      labels = c(5,10,50,100,300,500,1000,2000,5000,10000,15000,20000,30000)
     }
     tick.at = log10(labels+logcount)-log10(logcount);
   } else {
