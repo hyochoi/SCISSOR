@@ -100,7 +100,7 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
 
   # Start plotting
   if (print.ranges) {
-    par(mar=c(5,3,3,1))
+    par(mar=c(3.2,3,3,1))
   } else {
     par(mar=c(3,3,3,1))
   }
@@ -123,9 +123,9 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
          at=x.tick.at,labels=x.labels.l) ;
     axis(side=1, lwd=0, line=-0.1, cex.axis=0.8,col.axis="darkgrey",
          at=x.tick.at,labels=x.labels.g) ;
-    mtext(side=1, xlab, line=2.5, cex=1) ;
+    mtext(side=1, xlab, line=2, cex=0.8) ;
   } else {
-    mtext(side=1, xlab, line=1, cex=1)
+    mtext(side=1, xlab, line=1, cex=0.8)
   }
   if (!is.null(logcount)) {
     if (logcount==1) {
@@ -140,7 +140,7 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
   }
   axis(side=2, tck=-0.02, at=tick.at, col.ticks="darkgrey",las=1,
        labels=labels,lwd=0,line=-0.8,cex.axis=0.8,col.axis="darkgrey")
-  mtext(side=2, ylab, line=1.5, cex=1) ;
+  mtext(side=2, ylab, line=1.5, cex=0.8) ;
 
   box(lwd=1.5)
   if (plot.meanpileup){
