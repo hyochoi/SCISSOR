@@ -38,15 +38,28 @@
 plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
                        plot.meanpileup=TRUE,
                        col.pileup=NULL,col.meanpileup="grey",
-                       title=NULL,cex.title=1.5,
+                       main=NULL,cex.main=1.2,
                        print.ranges=TRUE,
                        xlim=NULL,ylim=NULL,xlab=NULL,ylab=NULL,...) {
 
   ##  % needed variables
+  if (missing(Pileup)) {
+    stop("Pileup is missing")
+  }
+  if (missing(Ranges)) {
+    stop("Genomic ranges should be needed (See get_Ranges)")
+  }
   samplist = colnames(Pileup)
   n = length(samplist)
   exons = Ranges$lRanges[,c(2,3)]
   if (is.null(cases)) cases = 1:n
+  if (!is.numeric(cases)) {
+    caseIDs=cases
+    cases=which(samplist %in% caseIDs)
+    if (length(cases)==0) {
+      stop("No sample matches with the given case IDs.")
+    }
+  }
 
   require("RColorBrewer")
   candicol1 = c(brewer.pal(9,"Pastel1")[6], # candidate colors for exonic regions
@@ -71,11 +84,11 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
   if (is.null(ylim)) ylim = yaxis.hy(Pileup)
   if (is.null(xlab)) xlab = "genomic positions"
   if (is.null(ylab)) ylab = "read depth"
-  if (is.null(title)) {
+  if (is.null(main)) {
     if (length(cases)>1) {
-      plot.title = paste0(Ranges$Gene)
+      main = paste0(Ranges$Gene)
     } else if (length(cases)==1) {
-      plot.title = paste0(Ranges$Gene," | sample #",cases," (ID:",samplist[cases],")")
+      main = paste0(Ranges$Gene," | sample #",cases," (ID:",samplist[cases],")")
     }
   }
   # pileup colors
@@ -100,9 +113,9 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
 
   # Start plotting
   if (print.ranges) {
-    par(mar=c(3.2,3,3,1))
+    par(mar=c(3.2,3,3,1.5))
   } else {
-    par(mar=c(3,3,3,1))
+    par(mar=c(3,3,3,1.5))
   }
   meanPileup = apply(Pileup, 1, median) ;
   plot(meanPileup, type='l', lty=2, lwd=0.5, ylim=c(min(0,ylim[1]),ylim[2]),
@@ -112,7 +125,7 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
   }
   abline(v=exons[,1],lty=1,col="lightyellow3",lwd=0.1) ;
   abline(v=exons[,2],lty=1,col="lightyellow3",lwd=0.1) ;
-  title(plot.title, cex.main=cex.title,font.main=1,line=0.5);
+  title(main, cex.main=cex.main,font.main=1,line=0.5);
 
   if (print.ranges) {
     x.tick.at = c(1,Ranges$lRanges[2:nrow(Ranges$lRanges),2],max(Ranges$lRanges))
@@ -123,9 +136,9 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
          at=x.tick.at,labels=x.labels.l) ;
     axis(side=1, lwd=0, line=-0.1, cex.axis=0.8,col.axis="darkgrey",
          at=x.tick.at,labels=x.labels.g) ;
-    mtext(side=1, xlab, line=2, cex=0.8) ;
+    mtext(side=1, xlab, line=2, cex=1) ;
   } else {
-    mtext(side=1, xlab, line=1, cex=0.8)
+    mtext(side=1, xlab, line=1, cex=1)
   }
   if (!is.null(logcount)) {
     if (logcount==1) {
@@ -140,7 +153,7 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
   }
   axis(side=2, tck=-0.02, at=tick.at, col.ticks="darkgrey",las=1,
        labels=labels,lwd=0,line=-0.8,cex.axis=0.8,col.axis="darkgrey")
-  mtext(side=2, ylab, line=1.5, cex=0.8) ;
+  mtext(side=2, ylab, line=1.5, cex=1) ;
 
   box(lwd=1.5)
   if (plot.meanpileup){

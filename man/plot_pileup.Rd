@@ -6,7 +6,7 @@
 \usage{
 plot_pileup(Pileup, Ranges, cases = NULL, logcount = NULL,
   plot.meanpileup = TRUE, col.pileup = NULL, col.meanpileup = "grey",
-  title = NULL, cex.title = 1.5, print.ranges = TRUE, xlim = NULL,
+  main = NULL, cex.main = 1.2, print.ranges = TRUE, xlim = NULL,
   ylim = NULL, xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
