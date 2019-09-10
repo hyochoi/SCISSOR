@@ -130,10 +130,11 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
   if (print.ranges) {
     x.tick.at = c(1,Ranges$lRanges[2:nrow(Ranges$lRanges),2],max(Ranges$lRanges))
     x.labels.l = c(Ranges$Gene,Ranges$lRanges[2:nrow(Ranges$lRanges),2],max(Ranges$lRanges))
+    x.labels.c = c(Ranges$Gene,Ranges$cRanges[2:nrow(Ranges$lRanges),1],max(Ranges$cRanges))
     x.labels.g = c(Ranges$chr,Ranges$gRanges[2:nrow(Ranges$gRanges),2],max(Ranges$gRanges))
     axis(side=1, tck=-0.01, at=x.tick.at, labels=NA, col.ticks="darkgrey") ;
     axis(side=1, lwd=0, line=-1, cex.axis=0.8,col.axis="darkgrey",
-         at=x.tick.at,labels=x.labels.l) ;
+         at=x.tick.at,labels=x.labels.c) ;
     axis(side=1, lwd=0, line=-0.1, cex.axis=0.8,col.axis="darkgrey",
          at=x.tick.at,labels=x.labels.g) ;
     mtext(side=1, xlab, line=2, cex=1) ;

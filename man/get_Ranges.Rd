@@ -7,19 +7,27 @@
 get_Ranges(Gene = NULL, regions, outputType = "part_intron")
 }
 \arguments{
-\item{Gene}{Gene symbol}
+\item{Gene}{character(1) identifying the gene symbol, e.g. \code{"TP53"}}
 
-\item{regions}{genomic regions formatted as "chr1:1-100,200-300:+"}
+\item{regions}{character(1) describing genomic regions formatted as
+\code{"chr1:1-100,200-300:+"}}
 
-\item{outputType}{type of intronic region that will be included in output,
-with choices "whole_intron", "part_intron", or "only_exon"; the second is
-the default.}
+\item{outputType}{character(1) of the type of intronic region that will be
+included in output, with choices "whole_intron", "part_intron", or
+"only_exon"; the second is the default.}
+}
+\value{
+a \code{list} of key information for the regions provided:
+\itemize{
+  \item Gene gene symbol
+  \item gRanges ranges
+}
 }
 \description{
-Get genomic ranges and locus ranges from the regions provided
+This function returns
 }
 \examples{
 regions="chr17:7571720-7573008,7573927-7574033,7576525-7576657,7576853-7576926,7577019-7577155,7577499-7577608,7578177-7578289,7578371-7578554,7579312-7579590,7579700-7579721,7579839-7579940:-"
-Ranges=get_Ranges(regions=regions)
+Ranges=get_Ranges(Gene="TP53",regions=regions,outputType="part_intron")
 
 }

@@ -4,7 +4,7 @@
 #' and provides the most outlying window-direction for each outlier.
 #'
 #' @param miscGlobalResult Result from \link{miscGlobal}
-#' @param countData raw coverage matrix, dataI from \link{process_data}
+#' @param pileupData raw coverage matrix, dataI from \link{process_data}
 #' @param residualData a residual matrix from PCA, a data matrix subtracted by a low-rank matrix.
 #' @param exonset data annotation matrix, exonset from \link{process_data}
 #' @param windowSize a window length. Default is 100.
@@ -15,11 +15,12 @@
 #' @param reducedReturn
 #'
 #' @export
-miscLocal = function(miscGlobalResult,countData,exonset,
+miscLocal = function(miscGlobalResult,pileupData,Ranges,
                      siglev=1e-4,cutoff=NULL,
                      ADcutoff=3,windowSize=100,
                      reducedReturn=TRUE) {
   n = ncol(miscGlobalResult$residualData); d = nrow(miscGlobalResult$residualData);
+  exonset = Ranges$lRanges
   if (nrow(exonset)==1) {
     exon.base=c(exonset[1,2]:exonset[1,3])
   } else {
@@ -31,7 +32,7 @@ miscLocal = function(miscGlobalResult,countData,exonset,
 
   out1 = miscGlobalResult$SC;
   residualData2 = miscGlobalResult$residualData[,which(! c(1:n) %in% out1)]
-  countData2 = countData[,which(! c(1:n) %in% out1)]
+  pileupData2 = pileupData[,which(! c(1:n) %in% out1)]
   MOD=matrix(0,nrow=d,ncol=n)
   NPS=matrix(0,nrow=n,ncol=n)
   OS = rep(0,n);
@@ -42,7 +43,7 @@ miscLocal = function(miscGlobalResult,countData,exonset,
     residualData_out=NULL
   } else {
     residualData_out = detect_localout(residualData=residualData2,
-                                       countData=countData2,
+                                       pileupData=pileupData2,
                                        exonset=exonset,
                                        siglev=siglev,
                                        cutoff=cutoff,
@@ -82,7 +83,7 @@ miscLocal = function(miscGlobalResult,countData,exonset,
 #'
 #'
 #' @export
-detect_localout = function(residualData,countData,exonset,
+detect_localout = function(residualData,pileupData,exonset,
                            siglev=NULL,cutoff=NULL,ADcutoff=3,
                            windowSize=100,
                            reducedReturn=FALSE) {
@@ -90,12 +91,12 @@ detect_localout = function(residualData,countData,exonset,
   n2=ncol(residualData)
   onoff_res=as.list(NULL)
   readconstr=10 # the minimum reads count required to be considered for on/off local shape changes.
-  onoff_res[[1]]=get_offstat(residualData=residualData,countData=countData,exonset=exonset,ADcutoff=ADcutoff,
+  onoff_res[[1]]=get_offstat(residualData=residualData,pileupData=pileupData,exonset=exonset,ADcutoff=ADcutoff,
                              windowSize=windowSize,readconstr=readconstr)
-  onoff_res[[2]]=get_exon_offstat(residualData=residualData,countData=countData,exonset=exonset,ADcutoff=ADcutoff)
-  onoff_res[[3]]=get_exon_onstat(residualData=residualData,countData=countData,
+  onoff_res[[2]]=get_exon_offstat(residualData=residualData,pileupData=pileupData,exonset=exonset,ADcutoff=ADcutoff)
+  onoff_res[[3]]=get_exon_onstat(residualData=residualData,pileupData=pileupData,
                                  exonset=exonset,readconstr=readconstr)
-  onoff_res[[4]]=get_intron_onstat(residualData=residualData,countData=countData,
+  onoff_res[[4]]=get_intron_onstat(residualData=residualData,pileupData=pileupData,
                                    exonset=exonset,readconstr=readconstr)
 
   onoff_statmat=matrix(0,nrow=length(onoff_res),ncol=n2)
@@ -151,13 +152,13 @@ detect_localout = function(residualData,countData,exonset,
 #'
 #' This function quantifies abnormality associated with
 #' @export
-get_offstat= function(residualData,countData,exonset,ADcutoff=3,
+get_offstat= function(residualData,pileupData,exonset,ADcutoff=3,
                       windowSize=100,readconstr=10) {
   ## Step 2 : detect "off" outliers
   require(zoo)
   # Find eligible regions
   n2 = ncol(residualData)
-  medvec = apply(countData,1,median)
+  medvec = apply(pileupData,1,median)
 
   if (nrow(exonset)==1) {
     exon.base=c(exonset[1,2]:exonset[1,3])
@@ -172,7 +173,7 @@ get_offstat= function(residualData,countData,exonset,ADcutoff=3,
   mad.overall[which(mad.overall<1)]=1
   residualData = sweep(residualData,2,mad.overall,"/");
 
-  medvec.case = apply(countData[exon.base,],2,median)
+  medvec.case = apply(pileupData[exon.base,],2,median)
   medvec.case01 = rep(0,n2); medvec.case01[which(medvec.case>10)]=1;
   window_min = rollapply(medvec,width=windowSize,FUN=min) # min of med
   # window_mean = rollapply(medvec,width=windowSize,FUN=mean)
@@ -198,7 +199,7 @@ get_offstat= function(residualData,countData,exonset,ADcutoff=3,
   window_site = which(winsize_vec>0)
   window_size = winsize_vec[window_site]
   pdrate = matrix(0,nrow=length(window_site),ncol=ncol(residualData))
-  tMOD=matrix(0,nrow=nrow(countData),ncol=n2) # temp MOD
+  tMOD=matrix(0,nrow=nrow(pileupData),ncol=n2) # temp MOD
   tNPS=matrix(0,nrow=n2,ncol=n2) # temp NPS
   if (length(window_site)>0) {
     for (i in which((window_site>100) & (window_site<(nrow(residualData)-100)))) {
@@ -239,10 +240,10 @@ get_offstat= function(residualData,countData,exonset,ADcutoff=3,
 
 #'
 #' @export
-get_exon_offstat= function(residualData,countData,exonset,ADcutoff=3) {
+get_exon_offstat= function(residualData,pileupData,exonset,ADcutoff=3) {
 
   n2 = ncol(residualData)
-  medvec = apply(countData,1,median)
+  medvec = apply(pileupData,1,median)
   nexon=nrow(exonset)
 
   exon.comb=diag(1,nexon)
@@ -271,7 +272,7 @@ get_exon_offstat= function(residualData,countData,exonset,ADcutoff=3) {
   exonoff_stat = apply(pdrate,2,max)
   where_on = apply(pdrate,2,which.max)
 
-  tMOD=matrix(0,nrow=nrow(countData),ncol=n2) # temp MOD
+  tMOD=matrix(0,nrow=nrow(pileupData),ncol=n2) # temp MOD
   tNPS=matrix(0,nrow=n2,ncol=n2) # temp NPS
   for (j in 1:n2) {
     carea=c()
@@ -289,10 +290,10 @@ get_exon_offstat= function(residualData,countData,exonset,ADcutoff=3) {
 
 #'
 #' @export
-get_exon_onstat= function(residualData,countData,exonset,readconstr=10) {
+get_exon_onstat= function(residualData,pileupData,exonset,readconstr=10) {
 
   n2 = ncol(residualData)
-  medvec = apply(countData,1,median)
+  medvec = apply(pileupData,1,median)
   nexon=nrow(exonset)
 
   exon.comb=diag(1,nexon)
@@ -318,8 +319,8 @@ get_exon_onstat= function(residualData,countData,exonset,readconstr=10) {
     }
     if (length(carea1)>20) {
       pdrate1[i,] = pd.rate.hy(apply(residualData[carea1,],2,sum),qrsc=T);
-      medianmat[i,] = apply(countData[carea1,],2,FUN=function(x){(quantile(x,probs=0.75)>=readconstr)})
-      medianmat1[i,] = apply(countData[carea1,],2,FUN=function(x){fivenum(x)[3]})
+      medianmat[i,] = apply(pileupData[carea1,],2,FUN=function(x){(quantile(x,probs=0.75)>=readconstr)})
+      medianmat1[i,] = apply(pileupData[carea1,],2,FUN=function(x){fivenum(x)[3]})
     }
 
     # carea2=c()
@@ -327,13 +328,13 @@ get_exon_onstat= function(residualData,countData,exonset,readconstr=10) {
     #   carea2=c(carea2,c(exonset[e,2]:exonset[e,3]))
     # }
     # pdrate2[i,] = pd.rate.hy(apply(residualData[carea2,],2,sum),qrsc=T);
-    # medianmat2[i,] = apply(countData[carea2,],2,FUN=function(x){fivenum(x)[3]})
+    # medianmat2[i,] = apply(pileupData[carea2,],2,FUN=function(x){fivenum(x)[3]})
   }
 
   exonon_stat = apply(pdrate1*medianmat,2,max)
   where_on = apply(pdrate1*medianmat,2,which.max)
 
-  tMOD=matrix(0,nrow=nrow(countData),ncol=n2)
+  tMOD=matrix(0,nrow=nrow(pileupData),ncol=n2)
   tNPS=matrix(0,nrow=n2,ncol=n2) # temp NPS
   for (j in 1:n2) {
     carea=c()
@@ -351,7 +352,7 @@ get_exon_onstat= function(residualData,countData,exonset,readconstr=10) {
 
 #'
 #' @export
-get_intron_onstat= function(residualData,countData,exonset,readconstr=10) {
+get_intron_onstat= function(residualData,pileupData,exonset,readconstr=10) {
 
   intron_onstat_inner2=function(x){
     lcarea=length(carea)
@@ -383,7 +384,7 @@ get_intron_onstat= function(residualData,countData,exonset,readconstr=10) {
       if (length(carea)>20) {
         carea1 = c(exonset[i,2]:exonset[i,3])
         carea2 = c(exonset[(i+1),2]:exonset[(i+1),3])
-        medianmat[i,] = apply(countData,2,intron_onstat_inner2)
+        medianmat[i,] = apply(pileupData,2,intron_onstat_inner2)
 
         pdrate[i,] = pd.rate.hy(apply(residualData[carea,],2,sum),qrsc=T);
       }
@@ -393,7 +394,7 @@ get_intron_onstat= function(residualData,countData,exonset,readconstr=10) {
   intron_onstat = apply(pdrate*medianmat,2,max)
   where_on = apply(pdrate*medianmat,2,which.max)
 
-  tMOD=matrix(0,nrow=nrow(countData),ncol=n2)
+  tMOD=matrix(0,nrow=nrow(pileupData),ncol=n2)
   tNPS=matrix(0,nrow=n2,ncol=n2) # temp NPS
   if (nexon > 1) {
     for (j in 1:n2) {
