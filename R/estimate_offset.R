@@ -1,7 +1,7 @@
 #'
 #' @export
 estimate_offset = function(centerDataResult=NULL,msf=NULL,centeredData=NULL,
-                           pileup,exonset,
+                           pileupData,exonset,
                            smoothness=0.7,
                            makePlot=FALSE, ...) {
 
@@ -20,7 +20,7 @@ estimate_offset = function(centerDataResult=NULL,msf=NULL,centeredData=NULL,
   for (j in 1:nrow(exonset)) {
     exonbase = c(exonbase,c(exonset[j,2]:exonset[j,3]))
   }
-  goodcase = which(apply(pileup[exonbase,],2,mean)>5)
+  goodcase = which(apply(pileupData[exonbase,],2,mean)>5)
 
   ## estimate g by lowess
   if (length(goodcase)>floor(0.1*n)) {
