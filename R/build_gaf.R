@@ -11,8 +11,7 @@
 #' @examples
 #' build_gaf(Gene="TP53")
 #'
-#' @import BiocManager TxDb.Hsapiens.UCSC.hg19.knownGene
-#'   TxDb.Hsapiens.UCSC.hg38.knownGene org.Hs.eg.db GenomicRanges refGenome
+#' @import BiocManager  GenomicRanges refGenome
 #' @export
 build_gaf = function(Gene,GTF.file=NULL,hg.ref=c("hg19","hg38")) {
   if (missing(Gene)) {
@@ -24,22 +23,23 @@ build_gaf = function(Gene,GTF.file=NULL,hg.ref=c("hg19","hg38")) {
   }
 
   if (is.null(GTF.file)) {
-    require(org.Hs.eg.db)
-    hg.ref = match.arg(hg.ref, choices=c("hg19","hg38"))
-
-    if (hg.ref=="hg19") {
-      require(TxDb.Hsapiens.UCSC.hg19.knownGene)
-      txdb = TxDb.Hsapiens.UCSC.hg19.knownGene
-    } else {
-      require(TxDb.Hsapiens.UCSC.hg38.knownGene)
-      txdb = TxDb.Hsapiens.UCSC.hg38.knownGene
-    }
-
-    geneid = select(org.Hs.eg.db, keys=Gene, columns=c("ENTREZID"),keytype="SYMBOL")
-    ebg = exonsBy(txdb, by="gene") ## Once loaded, can be used at multiple instances
-    exondata = data.frame(reduce(ebg[which(names(ebg)==as.character(geneid[2]))]))
-    exons = paste(exondata$seqnames[1],paste(paste(exondata$start,exondata$end,sep="-"),collapse=","),
-                  exondata$strand[1],sep=":")
+    exons=c()
+  #   require(org.Hs.eg.db)
+  #   hg.ref = match.arg(hg.ref, choices=c("hg19","hg38"))
+  #
+  #   if (hg.ref=="hg19") {
+  #     require(TxDb.Hsapiens.UCSC.hg19.knownGene)
+  #     txdb = TxDb.Hsapiens.UCSC.hg19.knownGene
+  #   } else {
+  #     require(TxDb.Hsapiens.UCSC.hg38.knownGene)
+  #     txdb = TxDb.Hsapiens.UCSC.hg38.knownGene
+  #   }
+  #
+  #   geneid = select(org.Hs.eg.db, keys=Gene, columns=c("ENTREZID"),keytype="SYMBOL")
+  #   ebg = exonsBy(txdb, by="gene") ## Once loaded, can be used at multiple instances
+  #   exondata = data.frame(reduce(ebg[which(names(ebg)==as.character(geneid[2]))]))
+  #   exons = paste(exondata$seqnames[1],paste(paste(exondata$start,exondata$end,sep="-"),collapse=","),
+  #                 exondata$strand[1],sep=":")
   } else {
     require(refGenome)
     require(GenomicRanges)
