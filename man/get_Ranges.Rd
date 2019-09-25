@@ -4,7 +4,8 @@
 \alias{get_Ranges}
 \title{Genomic ranges and locus ranges}
 \usage{
-get_Ranges(Gene = NULL, regions, outputType = "part_intron")
+get_Ranges(Gene = NULL, regions = NULL, GTF.file = NULL,
+  hg.ref = c("hg19", "hg38"), outputType = "part_intron")
 }
 \arguments{
 \item{Gene}{character(1) identifying the gene symbol, e.g. \code{"TP53"}}
@@ -17,11 +18,8 @@ included in output, with choices "whole_intron", "part_intron", or
 "only_exon"; the second is the default.}
 }
 \value{
-a \code{list} of key information for the regions provided:
-\itemize{
-  \item Gene gene symbol
-  \item gRanges ranges
-}
+a \code{list} of key information for the regions provided: \itemize{
+  \item Gene gene symbol \item gRanges ranges }
 }
 \description{
 This function returns

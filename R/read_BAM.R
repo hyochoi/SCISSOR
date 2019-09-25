@@ -10,6 +10,7 @@
 #' @param outputType type of intronic region that will be included in output,
 #'   with choices "whole_intron", "part_intron", or "only_exon"; the second is
 #'   the default.
+#' @param strand.specific indicator to get only "+" strand pileup
 #' @examples
 #' manifest=read.table(file="~/Desktop/HNSC/base/HNSC_RNA_manifest_datastore.txt")
 #' manifest=manifest[1:10,]
@@ -23,7 +24,7 @@
 #'
 #' @import BiocManager Rsamtools
 #' @export
-read_BAM = function(BAMfiles,caseIDs=NULL,gaf=NULL,symbol=NULL,regions=NULL,outputType="part_intron",...) {
+read_BAM = function(BAMfiles,caseIDs=NULL,gaf=NULL,symbol=NULL,regions=NULL,outputType="part_intron",strand.specific=FALSE,...) {
 
   require(Rsamtools)
 
@@ -53,7 +54,7 @@ read_BAM = function(BAMfiles,caseIDs=NULL,gaf=NULL,symbol=NULL,regions=NULL,outp
   strtend.num=matrix(as.numeric(strtend),ncol=2)
   allPos = unlist(sapply(1:nrow(strtend.num), function(x) strtend.num[x,1]:strtend.num[x,2]))
 
-  covPileup = sapply(BAMfiles,function(x) read_aBAM(BAM=x,regions=new.regions))
+  covPileup = sapply(BAMfiles,function(x) read_aBAM(BAM=x,regions=new.regions,strand.specific=strand.specific,...))
   rownames(covPileup) = allPos
   colnames(covPileup) = caseIDs
   if (strnd=="+") {
@@ -63,7 +64,7 @@ read_BAM = function(BAMfiles,caseIDs=NULL,gaf=NULL,symbol=NULL,regions=NULL,outp
   }
 }
 
-read_aBAM = function(BAM,regions=NULL,...) {
+read_aBAM = function(BAM,regions=NULL,strand.specific=FALSE,...) {
   require(Rsamtools)
   bf = BamFile(BAM)
   ## prepare GRanges
@@ -74,7 +75,12 @@ read_aBAM = function(BAM,regions=NULL,...) {
 
   s_param = ScanBamParam(which=df, what=c("pos"))
   # p_param = PileupParam(max_depth=1000, min_base_quality = 0, min_mapq = 0, min_nucleotide_depth = 0, min_minor_allele_depth = 0, distinguish_strands = FALSE, distinguish_nucleotides = FALSE, ignore_query_Ns = FALSE, include_deletions = FALSE, include_insertions = FALSE, left_bins = NULL, query_bins = NULL,  cycle_bins = NULL)
-  res = pileup(bf, scanBamParam=s_param, pileupParam=PileupParam(distinguish_strands=F,distinguish_nucleotides=F,...))
+  if (!strand.specific) {
+    res = pileup(bf, scanBamParam=s_param, pileupParam=PileupParam(distinguish_strands=F,distinguish_nucleotides=F,...))
+  } else {
+    res = pileup(bf, scanBamParam=s_param, pileupParam=PileupParam(distinguish_strands=T,distinguish_nucleotides=F,...))
+    res = res[which(res0$strand=="+"),]
+  }
   ## pileup does not report zero coverage. manually put zero coverage to the output.
   ## will be deprecated or replaced to sth
   allPos = unlist(sapply(1:length(df), function(x) data.frame(df)[x,2]:data.frame(df)[x,3]))

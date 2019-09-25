@@ -5,15 +5,16 @@
 #' @param Gene character(1) identifying the gene symbol, e.g. \code{"TP53"}
 #' @param regions character(1) describing genomic regions formatted as
 #'   \code{"chr1:1-100,200-300:+"}
+#' @param GTF.file GTF file name (with full directory). If NULL, UCSC annotation
+#'   databases will be used. See \code{\link{build_gaf}.
+#' @param hg.ref either "hg19" or "hg38", which will be used for UCSC annotation
+#'   databases. By default, hg19 is used. See \code{\link{build_gaf}.
 #' @param outputType character(1) of the type of intronic region that will be
 #'   included in output, with choices "whole_intron", "part_intron", or
 #'   "only_exon"; the second is the default.
 #'
-#' @return a \code{list} of key information for the regions provided:
-#' \itemize{
-#'   \item Gene gene symbol
-#'   \item gRanges ranges
-#' }
+#' @return a \code{list} of key information for the regions provided: \itemize{
+#'   \item Gene gene symbol \item gRanges ranges }
 #'
 #' @examples
 #' regions="chr17:7571720-7573008,7573927-7574033,7576525-7576657,7576853-7576926,7577019-7577155,7577499-7577608,7578177-7578289,7578371-7578554,7579312-7579590,7579700-7579721,7579839-7579940:-"
@@ -21,15 +22,22 @@
 #'
 #' @import BiocManager Rsamtools
 #' @export
-get_Ranges = function(Gene=NULL,regions,outputType="part_intron") {
+get_Ranges = function(Gene=NULL,regions=NULL,GTF.file=NULL,hg.ref=c("hg19","hg38"),outputType="part_intron") {
 
   require(Rsamtools)
-  if (missing(regions)) {
-    stop("regions must be specified")
+  if (!is.null(Gene)) {
+    if (length(Gene)>1) {
+      warning("More than one gene was provided. The first gene will be used.")
+      Gene=Gene[1]
+    }
   }
-  if (length(Gene)>1) {
-    warning("More than one gene was provided. The first gene will be used.")
-    Gene=Gene[1]
+  if (is.null(regions)) {
+    if (is.null(Gene)) {
+      stop("Either Gene or regions must be specified")
+    } else {
+      hg.ref = match.arg(hg.ref, choices=c("hg19","hg38"))
+      regions = build_gaf(Gene=Gene,GTF.file=GTF.file,hg.ref=hg.ref)
+    }
   }
   chr = strsplit(regions,":")[[1]][1]
   strtend = do.call(rbind,strsplit(strsplit(strsplit(regions,":")[[1]][2],",")[[1]],"-"))

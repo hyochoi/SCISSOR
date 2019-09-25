@@ -5,7 +5,8 @@
 \title{Read BAM files into R}
 \usage{
 read_BAM(BAMfiles, caseIDs = NULL, gaf = NULL, symbol = NULL,
-  regions = NULL, outputType = "part_intron", ...)
+  regions = NULL, outputType = "part_intron",
+  strand.specific = FALSE, ...)
 }
 \arguments{
 \item{regions}{genomic regions formatted as chr1:1-100,200-300:+"}
@@ -13,6 +14,8 @@ read_BAM(BAMfiles, caseIDs = NULL, gaf = NULL, symbol = NULL,
 \item{outputType}{type of intronic region that will be included in output,
 with choices "whole_intron", "part_intron", or "only_exon"; the second is
 the default.}
+
+\item{strand.specific}{indicator to get only "+" strand pileup}
 }
 \description{
 Get coverage pileup from BAM files for the provided regions.
