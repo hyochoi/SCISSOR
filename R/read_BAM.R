@@ -79,7 +79,7 @@ read_aBAM = function(BAM,regions=NULL,strand.specific=FALSE,...) {
     res = pileup(bf, scanBamParam=s_param, pileupParam=PileupParam(distinguish_strands=F,distinguish_nucleotides=F,...))
   } else {
     res = pileup(bf, scanBamParam=s_param, pileupParam=PileupParam(distinguish_strands=T,distinguish_nucleotides=F,...))
-    res = res[which(res0$strand=="+"),]
+    res = res[which(res$strand=="+"),]
   }
   ## pileup does not report zero coverage. manually put zero coverage to the output.
   ## will be deprecated or replaced to sth
