@@ -5,16 +5,14 @@
 \title{This function is a wrapper of the necessary functions to detect RNA-seq shape
 changes at a single gene in a single command.}
 \usage{
-Scissor(pileup, exon, gene = NULL, siglev = 1e-04,
-  logshiftVal = NULL, windowSize = 50, inputType = "part_intron",
-  outputType = "part_intron", plotNormalization = TRUE,
-  reducedReturn = FALSE)
+Scissor(pileupData, Ranges, siglev = 1e-04, logshiftVal = NULL,
+  windowSize = 50, plotNormalization = TRUE, reducedReturn = FALSE)
 }
 \arguments{
-\item{pileup}{a pile-up data matrix obtained from bam files, i.e. base-level
+\item{pileupData}{a pile-up data matrix obtained from bam files, i.e. base-level
 raw counts. Columns are samples and rows are genomic positions.}
 
-\item{exon}{an exon annotation for the given gene.}
+\item{Ranges}{an exon annotation for the given gene.}
 
 \item{siglev}{a significance level for detecting outliers. Default is 1e-4.}
 
@@ -23,13 +21,6 @@ transformation. Default is NULL and automatically selects the pseudo count
 based on the implemented algorithm.}
 
 \item{windowSize}{a window size used in the local shape change detection.}
-
-\item{inputType}{type of intronic region contained in pileup, with choices
-"whole_intron", "part_intron", or "only_exon"; the second is the default.}
-
-\item{outputType}{type of intronic region that will be included in output,
-with choices "whole_intron", "part_intron", or "only_exon"; the second is
-the default.}
 
 \item{plotNormalization}{logical, whether to plot variation with respect to
 overall expression with fitted curve. Default is FALSE}
