@@ -7,21 +7,24 @@ High-throughput sequencing protocols such as RNA-seq have made it possible to in
 
 ## System Requirements
 
-* Hardware requirements
+### Hardware requirements
 
-* Software requirements
+### Software requirements
+
+### R dependencies
+
 
 
 ## Installation Guide
 
-1. install devtools:
+1. install `devtools`:
 
 ```r
 if ("devtools" %in% rownames(installed.packages()) == FALSE) {install.packages("devtools")}
 library(devtools)
 ```
 
-2. install SCISSOR:
+2. install `SCISSOR`:
 
 ```r
 install_github("hyochoi/SCISSOR")
