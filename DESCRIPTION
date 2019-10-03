@@ -6,7 +6,14 @@ Description: What the package does (one paragraph).
 biocViews:
 Depends: R (>= 3.5.1)
 Imports:
+  BiocManager
+  Rsamtools
   GenomicRanges
+  refGenome
+  RColorBrewer
+  wesanderson
+  nloptr
+  zoo
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
