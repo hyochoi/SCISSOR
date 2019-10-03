@@ -14,6 +14,7 @@
 #' If NULL, the cutoff value is computed based on the specified siglev.
 #' @param reducedReturn
 #'
+#' @import zoo
 #' @export
 miscLocal = function(miscGlobalResult,pileupData,Ranges,
                      siglev=1e-4,cutoff=NULL,

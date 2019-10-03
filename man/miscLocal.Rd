@@ -4,16 +4,14 @@
 \alias{miscLocal}
 \title{Detect local shape changes}
 \usage{
-miscLocal(miscGlobalResult, countData, exonset, siglev = 1e-04,
+miscLocal(miscGlobalResult, pileupData, Ranges, siglev = 1e-04,
   cutoff = NULL, ADcutoff = 3, windowSize = 100,
   reducedReturn = TRUE)
 }
 \arguments{
 \item{miscGlobalResult}{Result from \link{miscGlobal}}
 
-\item{countData}{raw coverage matrix, dataI from \link{process_data}}
-
-\item{exonset}{data annotation matrix, exonset from \link{process_data}}
+\item{pileupData}{raw coverage matrix, dataI from \link{process_data}}
 
 \item{siglev}{the significance level for a robust outlier detection. Default is 1e-5.
 IF cutoff is specified, siglev is not used.}
@@ -26,6 +24,8 @@ If NULL, the cutoff value is computed based on the specified siglev.}
 \item{reducedReturn}{}
 
 \item{residualData}{a residual matrix from PCA, a data matrix subtracted by a low-rank matrix.}
+
+\item{exonset}{data annotation matrix, exonset from \link{process_data}}
 }
 \description{
 This function discovers outlying subjects whose RNA-seq have "local" abnormal shapes
