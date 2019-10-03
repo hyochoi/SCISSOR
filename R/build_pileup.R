@@ -1,8 +1,8 @@
-#' Read coverage pileup into R
+#' Build coverage pileup based on annotations
 #'
 #' This function is used to get pileup data based on new transcript for the
 #' purpose of the downstream outlier detection analysis.
-#' @param pileupfile
+#' @param Pileup
 #' @param caseIDs
 #' @param regions genomic regions formatted as chr1:1-100,200-300:+"
 #' @param inputType type of intronic region contained in pileup, with choices
@@ -18,20 +18,20 @@
 #'
 #' @import BiocManager Rsamtools
 #' @export
-read_pileup = function(pileupfile,caseIDs=NULL,regions,
+build_pileup = function(Pileup,caseIDs=NULL,regions,
                        inputType="part_intron",
                        outputType="part_intron") {
   # inputType  = "whole_intron", "part_intron", "only_exon"
   # output.ytpe = "whole_intron", "part_intron", "only_exon"
 
-  if (missing(pileupfile)) {
-    stop("pileup file path is missing")
+  if (missing(Pileup)) {
+    stop("Pileup is missing")
   }
   if (missing(regions)) {
     stop("Regions should be specified")
   }
 
-  rawPileup = as.matrix(t(read.table(pileupfile, sep="")))
+  rawPileup = Pileup
   if (is.null(caseIDs)) {
     caseIDs = paste0("case-",1:ncol(rawPileup),sep="")
   }

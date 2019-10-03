@@ -14,7 +14,6 @@ High-throughput sequencing protocols such as RNA-seq have made it possible to in
 ### R dependencies
 
 
-
 ## Installation Guide
 
 1. install `devtools`:
