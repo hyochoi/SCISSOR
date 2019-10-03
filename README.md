@@ -40,7 +40,15 @@ if ("devtools" %in% rownames(installed.packages()) == FALSE) {install.packages("
 library(devtools)
 ```
 
-2. install `SCISSOR`:
+2. install Bioconductor dependencies:
+```r
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("GenomicRanges")
+```
+
+3. install `SCISSOR`:
 
 ```r
 install_github("hyochoi/SCISSOR")
