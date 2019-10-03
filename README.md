@@ -55,7 +55,7 @@ Installation takes 9-10 mins.
 
 **Note:**  
 
-If you see the following error: 
+If you see errors like: 
 ```r
 ‘rlang’ 0.3.4 is already loaded, but >= 0.4.0 is required
 ```
