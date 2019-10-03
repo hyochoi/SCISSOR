@@ -13,11 +13,12 @@ https://hyochoi.github.io/SCISSOR
 
 ## System Requirements
 
-### Hardware requirements
+This package has been tested on the following systems:
 
-### Software requirements
+* macOS: Mojave (10.14.6)  
+* Linux: CentOS (7.5)
 
-### R package dependencies
+## R package dependencies
 
 `SCISSOR` requires the following packages:
 
