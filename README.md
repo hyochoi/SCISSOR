@@ -1,15 +1,18 @@
 
-# SCISSOR (Shape Changes In Selecting Sample Outliers in RNA-seq)
+# SCISSOR
 
-The documentation is available at:
-```
-https://hyochoi.github.io/SCISSOR
-```
+## Shape Changes In Selecting Sample Outliers in RNA-seq
 
 ## Overview
 
 `SCISSOR` (shape changes in selecting sample outliers in RNA-seq) aims for unsupervised screening of a range of structural alterations in RNA-seq data. `SCISSOR` considers a novel shape property of aligned short read data through a base-level pileup file. This intact and uncompressed view of RNA-seq profile enables the unbiased discovery of structural alterations by looking for anomalous shapes in expression. This approach holds promise for identifying otherwise obscured genetic aberrations. As a result, `SCISSOR` identifies known as well as novel aberrations including abnormal splicing, intra-/intergenic deletions, small indels, alternative transcription start/termination. 
 
+## Documentation
+
+The documentation is available at:
+```
+https://hyochoi.github.io/SCISSOR
+```
 
 ## System Requirements
 
