@@ -47,5 +47,19 @@ install_github("hyochoi/SCISSOR")
 library(SCISSOR)
 ```
 
-Installation takes 5-6 mins. 
+Installation takes 9-10 mins. 
+
+**Note:**  
+
+If you see the following error: 
+```r
+‘rlang’ 0.3.4 is already loaded, but >= 0.4.0 is required
+```
+try this:
+```r
+devtools::install_github("r-lib/rlang", build_vignettes = TRUE)
+```
+
+
+
 
