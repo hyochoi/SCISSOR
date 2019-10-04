@@ -146,10 +146,16 @@ geneRanges = get_Ranges(Gene=Gene,regions=regions,outputType=outputType)
 </code></pre>
 
 <h2 id="plot-coverage">Plot coverage</h2>
-<pre><code class="r">plot_pileup(Pileup=pileup,Ranges=geneRanges)
+<pre><code class="r">plot_pileup(Pileup=pileupData,Ranges=Ranges,cases=randomSamples,
+            main=&quot;Raw coverage&quot;)
 </code></pre>
 
-<p><img alt="toyrawpileup" src="../images/Toy_raw_pileup.png" /></p>
+<p><img alt="toyrawpileup" src="../images/TOY_raw.png" /></p>
+<pre><code class="r">plot_pileup(Pileup=log10(pileupData+1),Ranges=Ranges,cases=randomSamples,
+            main=&quot;Log-transformed coverage&quot;,logcount=1)
+</code></pre>
+
+<p><img alt="toyrawpileup" src="../images/TOY_log.png" /></p>
 <h2 id="run-scissor">Run SCISSOR</h2>
 <p><code>Scissor</code> is all-in-one function performing transformation, normalization, and the statistical analysis. </p>
 <p>We have base-level pileup data (as the object, <strong>pileup</strong>) and genomic ranges (as the object, <strong>geneRanges</strong>) from the previous steps. <code>Scissor</code> takes these as inputs with other options to  identify various types of structural changes such as abnormal splicing (exon skipping and intron retention), alternative transcription start or termination, small deletions, and etc. You can use <code>Scissor</code> as the following simple command:</p>
