@@ -4,7 +4,7 @@
 \alias{detect_localout}
 \title{Detect local shape outliers with a residual matrix}
 \usage{
-detect_localout(residualData, countData, exonset, siglev = NULL,
+detect_localout(residualData, pileupData, exonset, siglev = NULL,
   cutoff = NULL, ADcutoff = 3, windowSize = 100,
   reducedReturn = FALSE)
 }

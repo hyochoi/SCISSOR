@@ -113,9 +113,9 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
 
   # Start plotting
   if (print.ranges) {
-    par(mar=c(3.2,3,3,1.5))
+    par(mar=c(3.2,3.3,3,1.5))
   } else {
-    par(mar=c(3,3,3,1.5))
+    par(mar=c(3,3.3,3,1.5))
   }
   meanPileup = apply(Pileup, 1, median) ;
   plot(meanPileup, type='l', lty=2, lwd=0.5, ylim=c(min(0,ylim[1]),ylim[2]),
@@ -154,7 +154,7 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
   }
   axis(side=2, tck=-0.02, at=tick.at, col.ticks="darkgrey",las=1,
        labels=labels,lwd=0,line=-0.8,cex.axis=0.8,col.axis="darkgrey")
-  mtext(side=2, ylab, line=1.5, cex=1) ;
+  mtext(side=2, ylab, line=2, cex=1) ;
 
   box(lwd=1.5)
   if (plot.meanpileup){
