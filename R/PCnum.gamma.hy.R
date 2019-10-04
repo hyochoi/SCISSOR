@@ -2,6 +2,7 @@
 #' @param eps tuning parameter for estimating the number of PCs. If NULL
 #'   (default), eps = (1/nrow(data))
 #'
+#' @import nloptr
 #' @export
 PCnum.gamma.hy = function(eigenval,d,n,eps=1e-4){
   # Third version - consider jth eigenvalue as a spike only if it is larger than a criteria

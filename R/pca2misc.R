@@ -1,8 +1,8 @@
 #'
 #' @export
 pca2misc = function(scoremat,eigenvalue,dimension,
-                    PCnum=NULL,maxPCnum=20,ADcutoff=3,
-                    siglev=1e-10,
+                    siglev=1e-4,ADcutoff=3,
+                    PCnum=NULL,maxPCnum=10,
                     reducedReturn=FALSE) {
   # Version 3: Add choosing PC directions
   # Computes the Stahel-Donoho outlyingness of every element in x
