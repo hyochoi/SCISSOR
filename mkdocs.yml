@@ -1,0 +1,8 @@
+site_name: SCISSOR
+nav:
+  - Getting Started: installation.md
+  - Tutorial: tutorial.md
+  - Demo: example.md
+
+
+theme: readthedocs
