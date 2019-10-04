@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Tutorial - SCISSOR</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Tutorial";
+    var mkdocs_page_input_path = "tutorial.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> SCISSOR</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../installation/">Getting Started</a>
+	    </li>
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">Tutorial</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#tutorial">Tutorial</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#get-gene-annotation">Get gene annotation</a></li>
+        
+            <li><a class="toctree-l3" href="#get-coverage-from-bam-files">Get coverage from BAM files</a></li>
+        
+            <li><a class="toctree-l3" href="#get-genomic-ranges-for-analysis">Get genomic ranges for analysis</a></li>
+        
+            <li><a class="toctree-l3" href="#plot-coverage">Plot coverage</a></li>
+        
+            <li><a class="toctree-l3" href="#run-scissor">Run SCISSOR</a></li>
+        
+        </ul>
+    
+
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../example/">Demo</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">SCISSOR</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Tutorial</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="tutorial">Tutorial</h1>
+<p>This tutorial is for a single gene analysis with <code>SCISSOR</code>. For more information, you can find R documentation for each function using <code>?function</code>. E.g.:</p>
+<pre><code class="r">?read_BAM
+</code></pre>
+
+<h2 id="get-gene-annotation">Get gene annotation</h2>
+<p>If you have gene annotation (genomic coordinates for exons) for your gene, you can skip this step. If this is not the case, you can use <code>build_gaf</code> to obtain gene annotation from GTF file. Make sure that you specify a gene symbol, e.g. TP53, as an input in <code>build_gaf</code>.</p>
+<pre><code class="r">Gene=&quot;TP53&quot;
+regions=build_gaf(Gene=Gene,GTF.file=&quot;./Homo_sapiens.GRCh37.87.gtf&quot;)
+</code></pre>
+
+<p>Suppose that GTF file have information about our hypothetical gene, "TOY". Then, the <code>build_gaf</code> gives the exons for the gene "TOY", and the output will be something like:</p>
+<pre><code class="r">&gt; regions
+[1] &quot;chrQ:7571719-7572198,7574858-7575157,7598088-7598437:-&quot;
+</code></pre>
+
+<h2 id="get-coverage-from-bam-files">Get coverage from BAM files</h2>
+<p>SCISSOR takes base-level pileup for a single gene as an input. If you want to get the pileup data from BAM files, you can use <code>read_BAM</code>. Suppose that your BAM files are located under the directory, ~/bamDir/. You can read the part of the BAM files for particular regions of interest into R. Then, the resulting data object <strong>pileup</strong> is a matrix where samples are in columns and genomic coordinates are in rows. If you have IDs for your samples, you can specify them for the argument <code>caseIDs</code>. </p>
+<pre><code class="r">BAMfiles=list.files(path=&quot;~/bamDir/&quot;)
+BAMfilesPath=as.character(sapply(BAMfiles[1:3],function(x) paste(getwd(),x,sep=&quot;/&quot;)))
+pileup=read_BAM(BAMfiles=bamfilesPath,caseIDs=case.barcodes,
+                symbol=Gene,regions=regions,outputType=outputType)
+</code></pre>
+
+<h2 id="get-genomic-ranges-for-analysis">Get genomic ranges for analysis</h2>
+<p>The next important step of SCISSOR is to get genomic ranges for the gene of interest using <code>get_Ranges</code>. </p>
+<pre><code class="r">outputType=&quot;part_intron&quot;
+geneRanges = get_Ranges(Gene=Gene,regions=regions,outputType=outputType)
+</code></pre>
+
+<h2 id="plot-coverage">Plot coverage</h2>
+<pre><code class="r">plot_pileup(Pileup=pileupData,Ranges=Ranges,cases=randomSamples,
+            main=&quot;Raw coverage&quot;)
+</code></pre>
+
+<p><img alt="toyrawpileup" src="../images/TOY_raw.png" /></p>
+<pre><code class="r">plot_pileup(Pileup=log10(pileupData+1),Ranges=Ranges,cases=randomSamples,
+            main=&quot;Log-transformed coverage&quot;,logcount=1)
+</code></pre>
+
+<p><img alt="toyrawpileup" src="../images/TOY_log.png" /></p>
+<h2 id="run-scissor">Run SCISSOR</h2>
+<p><code>Scissor</code> is all-in-one function performing transformation, normalization, and the statistical analysis. </p>
+<p>We have base-level pileup data (as the object, <strong>pileup</strong>) and genomic ranges (as the object, <strong>geneRanges</strong>) from the previous steps. <code>Scissor</code> takes these as inputs with other options to  identify various types of structural changes such as abnormal splicing (exon skipping and intron retention), alternative transcription start or termination, small deletions, and etc. You can use <code>Scissor</code> as the following simple command:</p>
+<pre><code class="r">ScissorOutput=Scissor(pileupData=pileup,Ranges=Ranges)
+</code></pre>
+
+<p><code>Scissor</code> performs:</p>
+<ul>
+<li>logarithmic transformation by automatically choosing the log shift parameter</li>
+<li>base-level normalization   </li>
+<li>global shape change detection by exploring all possible low-dimensional space   </li>
+<li>local shape change detection by exploring residual space   </li>
+</ul>
+<p><code>Scissor</code> provides:</p>
+<ul>
+<li>shape changes identified</li>
+<li>outlyingness scores (global and local)  </li>
+<li>cutoff values (global and local)    </li>
+<li>most outlyingness directions for the identified shape changes   </li>
+</ul>
+<p>For more information, see the R documentaion: <code>?Scissor</code> or <code>help(Scissor)</code>. </p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../example/" class="btn btn-neutral float-right" title="Demo">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../installation/" class="btn btn-neutral" title="Getting Started"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../installation/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../example/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>
