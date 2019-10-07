@@ -1,3 +1,4 @@
+
 yaxis.hy <- function(mat){
   #  mat : d by n matrix
   tempmax <- max(mat) ;

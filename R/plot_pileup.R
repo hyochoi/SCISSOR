@@ -50,7 +50,7 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
     stop("Genomic ranges should be needed (See get_Ranges)")
   }
   samplist = colnames(Pileup)
-  n = length(samplist)
+  n = ncol(Pileup)
   exons = Ranges$lRanges[,c(2,3)]
   if (is.null(cases)) cases = 1:n
   if (!is.numeric(cases)) {
@@ -113,9 +113,9 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
 
   # Start plotting
   if (print.ranges) {
-    par(mar=c(3.2,3.3,3,1.5))
+    par(mar=c(3.2,3.5,3,2))
   } else {
-    par(mar=c(3,3.3,3,1.5))
+    par(mar=c(3,3.5,3,2))
   }
   meanPileup = apply(Pileup, 1, median) ;
   plot(meanPileup, type='l', lty=2, lwd=0.5, ylim=c(min(0,ylim[1]),ylim[2]),
