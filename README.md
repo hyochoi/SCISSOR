@@ -9,10 +9,7 @@
 
 ## Documentation
 
-The documentation is available at:
-```
-https://hyochoi.github.io/SCISSOR
-```
+The documentation is available at [https://hyochoi.github.io/SCISSOR](https://hyochoi.github.io/SCISSOR)
 
 ## System Requirements
 
