@@ -11,15 +11,17 @@ kdeplot.hy <- function(x, bandwidth=NULL, indlist=NULL, indlist2=NULL,
   ##  Widen the height of points
   require('KernSmooth') ; require("Lmoments"); require("moments"); require("nortest");
   if (is.null(bandwidth)){
-    x.kde <- bkde(x) ;
+    x.kde <- bkde(x)
   }
   if (!is.null(bandwidth)){
-    x.kde <- bkde(x, bandwidth=bandwidth) ;
+    x.kde <- bkde(x, bandwidth=bandwidth)
   }
-  n <- length(x) ;
-  ymin <- quantile(x.kde$y, low)[[1]] ;
-  ymax <- quantile(x.kde$y, high)[[1]] ;
-  yplot <- ymin + (ymax - ymin)*runif(n) ;
+  n <- length(x)
+  # ymin <- quantile(x.kde$y, low)[[1]]
+  # ymax <- quantile(x.kde$y, high)[[1]]
+  ymin <- max(x.kde$y)*low
+  ymax <- max(x.kde$y)*high
+  yplot <- ymin + (ymax - ymin)*runif(n)
   if (is.null(xlim)){
     xlim=c(min(x), max(x)) ;
   }
