@@ -3,7 +3,7 @@
 kdeplot.hy <- function(x, bandwidth=NULL, indlist=NULL, indlist2=NULL,
                        colmat=NULL,indcol1="red", indcol2="cadetblue",
                        text=FALSE,textwhat=NULL,
-                       indpch=16, indcex=0.9, low=0.4, high=0.7, 
+                       indpch=16, indcex=0.9, low=0.4, high=0.7,
                        line.col="black", line.lwd=1,
                        xlab=NULL, ylab=NULL, xlim=NULL, ylim=NULL,main=NULL,cex.main=1.2,
                        ADlegend=FALSE,...){
@@ -34,9 +34,9 @@ kdeplot.hy <- function(x, bandwidth=NULL, indlist=NULL, indlist2=NULL,
   # axis(side=2, lwd=0, line=-1, cex=0.2) ;
   mtext(side=1, xlab, line=1.5, cex=1.3) ;
   mtext(side=2, ylab, line=1.5, cex=1.3) ;
-  
+
   title(main, cex.main=cex.main, font.main=1, line=0.3) ;
-  
+
   if (length(indlist)==0) {indlist=NULL}
   if (is.null(indlist)){
     if (is.null(colmat)){
@@ -53,7 +53,7 @@ kdeplot.hy <- function(x, bandwidth=NULL, indlist=NULL, indlist2=NULL,
       colmat[indlist] <- rep(indcol1, length(indlist)) ;
     }
     indlist0 = unique(indlist,indlist2);
-    points(x[-indlist0], yplot[-indlist0], col=colmat[-indlist0], cex=0.8, pch=16) ;
+    points(x[-indlist0], yplot[-indlist0], col=colmat[-indlist0], ...) ;
     if (!text){
       if (!is.null(indlist2)){
         points(x[indlist2], yplot[indlist2], col=colmat[indlist2], cex=indcex, pch=indpch) ;
