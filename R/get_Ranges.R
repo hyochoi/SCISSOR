@@ -55,17 +55,17 @@ get_Ranges = function(Gene=NULL,regions=NULL,GTF.file=NULL,hg.ref=c("hg19","hg38
   }
   lRanges0=ep.new$ep
   gRanges0=cbind(strtend.num[,1]-(lRanges0[,2]-lRanges0[,1]),strtend.num,strtend.num[,2]+(lRanges0[,4]-lRanges0[,3]))
-  cRanges0=find.exon.hy(regions,is.intron=TRUE,num.intron=0)$ep[,c(2,3)]
-  new.regions=paste0(chr,":",paste(apply(gRanges0[,c(1,4)],1,function(x) paste(x,collapse="-")),collapse=","),":",strnd)
+  cRanges0=matrix(find.exon.hy(regions,is.intron=TRUE,num.intron=0)$ep[,c(2,3)],ncol=2)
+  new.regions=paste0(chr,":",paste(apply(matrix(gRanges0[,c(1,4)],ncol=2),1,function(x) paste(x,collapse="-")),collapse=","),":",strnd)
 
   if (strnd=="+") {
     gRanges=gRanges0
     lRanges=lRanges0
     cRanges=cRanges0
   } else {
-    gRanges=gRanges0[rev(1:nrow(gRanges0)),rev(1:4)]
-    lRanges=max(lRanges0)-lRanges0[rev(1:nrow(lRanges0)),rev(1:4)]+1
-    cRanges=max(cRanges0)-cRanges0[rev(1:nrow(cRanges0)),2:1]+1
+    gRanges=matrix(gRanges0[rev(1:nrow(gRanges0)),rev(1:4)],ncol=4)
+    lRanges=matrix(max(lRanges0)-lRanges0[rev(1:nrow(lRanges0)),rev(1:4)]+1,ncol=4)
+    cRanges=matrix(max(cRanges0)-cRanges0[rev(1:nrow(cRanges0)),2:1]+1,ncol=2)
   }
   rm(gRanges0,lRanges0,cRanges0)
   colnames(gRanges)=c("ip.start","e.start","e.end","ip.end") # e:exon; ip: intronic part;
