@@ -22,7 +22,8 @@ a \code{list} of key information for the regions provided: \itemize{
   \item Gene gene symbol \item gRanges ranges }
 }
 \description{
-This function returns
+This function returns genomic ranges and locus ranges in the needed format
+for downstream SCISSOR analysis
 }
 \examples{
 regions="chr17:7571720-7573008,7573927-7574033,7576525-7576657,7576853-7576926,7577019-7577155,7577499-7577608,7578177-7578289,7578371-7578554,7579312-7579590,7579700-7579721,7579839-7579940:-"

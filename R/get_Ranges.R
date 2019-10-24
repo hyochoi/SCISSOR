@@ -1,6 +1,7 @@
 #' Genomic ranges and locus ranges
 #'
-#' This function returns
+#' This function returns genomic ranges and locus ranges in the needed format
+#' for downstream SCISSOR analysis
 #'
 #' @param Gene character(1) identifying the gene symbol, e.g. \code{"TP53"}
 #' @param regions character(1) describing genomic regions formatted as

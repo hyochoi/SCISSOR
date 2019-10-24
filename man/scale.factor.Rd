@@ -7,6 +7,11 @@
 \method{scale}{factor}(X, average = "mean", trim = 0.1,
   adjval = NULL, robustLM = FALSE)
 }
+\arguments{
+\item{X}{an input data matrix}
+
+\item{average}{}
+}
 \description{
-Obtain robust mean scale factors
+This function obtains the mean scale factors
 }

@@ -1,5 +1,10 @@
 #' Obtain robust mean scale factors
 #'
+#' This function obtains the mean scale factors
+#'
+#' @param X an input data matrix
+#' @param average
+#'
 #' @export
 scale.factor=function(X,average="mean",trim=0.1,adjval=NULL,robustLM=FALSE) {
   mean.vec = apply(X,1,FUN=function(x){adj.center(x,average=average,trim=trim,adjval=adjval)})
