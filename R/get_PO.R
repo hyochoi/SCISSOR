@@ -1,6 +1,6 @@
 #'
 #' @export
-get_PO = function(X,siglev=1e-4,NormCutoff=3,canDir=NULL) {
+get_PO = function(X,siglev=1e-4,NormCutoff=3,canDir=NULL,numSearch=300) {
 
   if (is.null(X)) {
     stop("object is null")
@@ -24,7 +24,7 @@ get_PO = function(X,siglev=1e-4,NormCutoff=3,canDir=NULL) {
     if (is.null(canDir)) {
       n = ncol(X); M = nrow(X)
       x = t(X)
-      ndir = 300*M
+      ndir = numSearch*M
       A = generdir(x,ndir=ndir) # generates `ndir' directions (ndir by M)
 
       ## Add more potential directions
