@@ -161,6 +161,6 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
     points(meanPileup, type='l', lty=1, lwd=2, col=col.meanpileup) ;
   }
   for (case in cases) {
-    points(Pileup[,case], type='l', lty=1, lwd=1.5, col=colset[case], ...) ;
+    points(Pileup[,case], type='l', lty=1, col=colset[case], ...) ;
   }
 }
