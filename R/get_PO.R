@@ -12,28 +12,33 @@ get_PO = function(X,siglev=1e-4,NormCutoff=3,canDir=NULL,numSearch=300) {
     if (ADstat < NormCutoff) {
       OS = abs(X-median(X))/mad(X)
       OSpval = 1-pchisq(q=OS^2,df=1)
+      cutoff = qchisq(p=(1-siglev),df=1)
       NPS = matrix(rep(OS,n),ncol=n)
       directions = matrix(rep(X,n),ncol=n)
     } else {
       message("no direction satisfied the constraint")
       OS = rep(0,n)
       OSpval = rep(1,n)
+      cutoff = 0
       NPS = directions = NULL
     }
   } else { # X is a matrix
     if (is.null(canDir)) {
-      n = ncol(X); M = nrow(X)
+      n = ncol(X); M = nrow(X);
+      Scov = (X%*%t(X))/n
+      d = which(eigen(Scov)$eigenvalues>1e-13)
       x = t(X)
       ndir = numSearch*M
       A = generdir(x,ndir=ndir) # generates `ndir' directions (ndir by M)
 
       ## Add more potential directions
-      Scov = (X%*%t(X))/n
-      B0 = solve(Scov)%*%X   # M by n
-      B0 = B0[,-which(apply(B0,2,FUN=function(x){sqrt(sum(x^2))})<1e-10)]
-      B1 = sweep(B0,2,apply(B0,2,FUN=function(x){sqrt(sum(x^2))}),"/")  # normalized M by n
-      A = rbind(A,t(B1),diag(M))  # ndir by M
-
+      if (M == d) {
+        B0 = solve(Scov)%*%X   # M by n
+        B0 = B0[,-which(apply(B0,2,FUN=function(x){sqrt(sum(x^2))})<1e-10)]
+        B1 = sweep(B0,2,apply(B0,2,FUN=function(x){sqrt(sum(x^2))}),"/")  # normalized M by n
+        A = rbind(A,t(B1))  # ndir by M
+      }
+      A = rbind(A,diag(M))
       ## Compute projection outlyingness
       Y = x %*% t(A) # project x onto A (n by ndir)
       ADstat = apply(Y,2,ADstatWins.hy) #
@@ -52,11 +57,13 @@ get_PO = function(X,siglev=1e-4,NormCutoff=3,canDir=NULL,numSearch=300) {
           directions[,neg.index] = -directions[,neg.index];
         }
         OS=diag(NPS)
-        OSpval = 1-pchisq(q=OS^2,df=M);
+        OSpval = 1-pchisq(q=OS^2,df=d);
+        cutoff = qchisq(p=(1-siglev),df=d);
       } else {
         message("no direction satisfied the constraint")
         OS = rep(0,n)
         OSpval = rep(1,n)
+        cutoff = 0
         NPS = directions = NULL
       }
     }
@@ -67,6 +74,6 @@ get_PO = function(X,siglev=1e-4,NormCutoff=3,canDir=NULL,numSearch=300) {
     out = which(OSpval<siglev)
     out.sort = out[order(OS[out],decreasing=TRUE)]
   }
-  return(list(OS=OS,OSpval=OSpval,NPS=NPS,directions=directions,
+  return(list(OS=OS,OSpval=OSpval,NPS=NPS,directions=directions,cutoff=cutoff,
               outliers=out,outliers.sort=out.sort))
 }
