@@ -82,8 +82,8 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
   # Set plot parameters
   if (is.null(xlim)) xlim = c(0,nrow(Pileup))
   if (is.null(ylim)) ylim = yaxis.hy(Pileup)
-  if (is.null(xlab)) xlab = "genomic positions"
-  if (is.null(ylab)) ylab = "read depth"
+  if (is.null(xlab)) xlab = "Genomic positions"
+  if (is.null(ylab)) ylab = "Read depth"
   if (is.null(main)) {
     if (length(cases)>1) {
       main = paste0(Ranges$Gene)
