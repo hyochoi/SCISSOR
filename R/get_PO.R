@@ -26,7 +26,7 @@ get_PO = function(X,siglev=1e-4,NormCutoff=3,canDir=NULL,numSearch=300) {
     if (is.null(canDir)) {
       n = ncol(X); M = nrow(X);
       Scov = (X%*%t(X))/n
-      d = which(eigen(Scov)$eigenvalues>1e-13)
+      d = length(which(eigen(Scov)$values>1e-13))
       x = t(X)
       ndir = numSearch*M
       A = generdir(x,ndir=ndir) # generates `ndir' directions (ndir by M)
