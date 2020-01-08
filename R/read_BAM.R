@@ -84,7 +84,7 @@ read_aBAM = function(BAM,regions=NULL,strand.specific=FALSE,...) {
   ## pileup does not report zero coverage. manually put zero coverage to the output.
   ## will be deprecated or replaced to sth
   allPos = unlist(sapply(1:length(df), function(x) data.frame(df)[x,2]:data.frame(df)[x,3]))
-  tmpDepth = rbind(res[,c("pos","count")],cbind(pos=allPos[!allPos %in% res$pos],count=0))
+  tmpDepth = rbind(res[,c("pos","count")],cbind(pos=allPos[!allPos %in% res$pos],count=rep(0,length(allPos[!allPos %in% res$pos]))))
   outpileup=tmpDepth[order(tmpDepth$pos),]
   rownames(outpileup)=1:dim(outpileup)[1]
   return(outpileup[,2])
