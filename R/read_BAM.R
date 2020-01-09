@@ -64,6 +64,7 @@ read_BAM = function(BAMfiles,caseIDs=NULL,gaf=NULL,symbol=NULL,regions=NULL,outp
   }
 }
 
+#' @export
 read_aBAM = function(BAM,regions=NULL,strand.specific=FALSE,...) {
   require(Rsamtools)
   bf = BamFile(BAM)
