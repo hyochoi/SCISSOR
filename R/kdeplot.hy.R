@@ -3,7 +3,7 @@
 kdeplot.hy <- function(x, bandwidth=NULL, indlist=NULL, indlist2=NULL,
                        colmat=NULL,indcol1="red", indcol2="cadetblue",
                        text=FALSE,textwhat=NULL,
-                       pch=16, indcex=1.2, low=0.4, high=0.7,
+                       cex=1.5, pch=16, indcex=1.2, low=0.4, high=0.7,
                        line.col="black", line.lwd=1,
                        xlab=NULL, ylab=NULL, xlim=NULL, ylim=NULL,main=NULL,cex.main=1.2,
                        ADlegend=FALSE,...){
@@ -44,7 +44,7 @@ kdeplot.hy <- function(x, bandwidth=NULL, indlist=NULL, indlist2=NULL,
     if (is.null(colmat)){
       colmat <- rep("grey", length(x))
     }
-    points(x, yplot, col=colmat, pch=pch, ...)
+    points(x, yplot, col=colmat, pch=pch, cex=cex, ...)
   } else {
     if (is.null(colmat)){
       colmat <- rep("grey", length(x))
@@ -54,7 +54,7 @@ kdeplot.hy <- function(x, bandwidth=NULL, indlist=NULL, indlist2=NULL,
       colmat[indlist] <- rep(indcol1, length(indlist))
     }
     indlist0 = unique(indlist,indlist2)
-    points(x[-indlist0], yplot[-indlist0], col=colmat[-indlist0], pch=pch, ...)
+    points(x[-indlist0], yplot[-indlist0], col=colmat[-indlist0], pch=pch, cex=cex, ...)
     if (!text){
       points(x[indlist], yplot[indlist], col=colmat[indlist], cex=indcex, pch=pch)
       if (!is.null(indlist2)){
