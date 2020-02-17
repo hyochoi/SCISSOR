@@ -20,7 +20,7 @@ normalize_data = function(inputData,
                           smoothness=0.7,
                           makePlot=FALSE, ...) {
 
-  centerDataResult = center_data(inputData=inputData)
+  centerDataResult = center_data(inputData=inputData,Ranges=Ranges)
   exonset = Ranges$lRanges
   Gene = Ranges$Gene
   g1.offset = estimate_offset(centerDataResult=centerDataResult,
