@@ -61,11 +61,11 @@ get_PO = function(X,siglev=1e-4,NormCutoff=3,canDir=NULL,numSearch=300,qrsc=FALS
         neg.index = which(diag(NPS)<0)
         if (length(neg.index)>0) {
           NPS[,neg.index] = -NPS[,neg.index];
-          directions[,neg.index] = -directions[,neg.index];
+          directions[,neg.index] = -directions[,neg.index]
         }
         OS=diag(NPS)
         OSpval = 1-pchisq(q=OS^2,df=p);
-        cutoff = qchisq(p=(1-siglev),df=p);
+        cutoff = sqrt(qchisq(p=(1-siglev),df=p))
       } else {
         message("no direction satisfied the constraint")
         OS = rep(0,n)
