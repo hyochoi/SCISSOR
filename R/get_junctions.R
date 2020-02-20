@@ -77,7 +77,7 @@ get_junctions = function(jsrCount,Ranges) {
 
   ## Junction classes
   JV.class = get_JVclass(LBE.position)
-  JSR.annotation = cbind(junctions.g.name,junctions.l.name,LBE.position,JVclass)
+  JSR.annotation = cbind(junctions.g.name,junctions.l.name,LBE.position,JV.class)
   rownames(JSR.annotation) = junction.names
   colnames(JSR.annotation) = c("junctions.g","junctions.l","LBE.position","JV.class")
   return(list(JSR.annotation=JSR.annotation,
