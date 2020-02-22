@@ -1,7 +1,172 @@
 #'
 #' @export
-find_junction_outliers_i = function(i,JSR.matrix,JSR.table,splice.ratio,
+get_SpliceRatio = function(Ranges,JSR.table,JSR.matrix) {
+
+  lRanges = Ranges$lRanges
+  nexons = nrow(lRanges)
+  n = ncol(JSR.matrix)
+  junctions.g = matrix(as.numeric(split_junction(JSR.table[,1])),ncol=2,byrow=T)
+  junctions.l = matrix(as.numeric(split_junction(JSR.table[,2])),ncol=2,byrow=T)
+  junction.start = unique(junctions.g[,1])
+
+  ## Exon splice ratio
+  exon.splice.ratio=matrix(0,ncol=ncol(JSR.matrix),nrow=nrow(JSR.matrix))
+  for (i in 1:length(junction.start)) {
+    index.temp=which(junctions.g[,1]==junction.start[i])
+    junction.sum = apply(matrix(JSR.matrix[index.temp,],ncol=n),2,sum);
+
+    if (max(junction.sum)>0) {
+      for (j in 1:n) {
+        if (junction.sum[j]>10) {
+          exon.splice.ratio[index.temp,j] = JSR.matrix[index.temp,j]/junction.sum[j]
+        }
+      }
+      for (j in 1:n) {
+        if (junction.sum[j]<=10) {
+          for (k in index.temp) {
+            exon.splice.ratio[k,j] = median(exon.splice.ratio[k,])
+          }
+        }
+      }
+    }
+  }
+  colnames(exon.splice.ratio) = colnames(JSR.matrix)
+
+  ## Intron splice ratio
+  intron.splice.ratio=matrix(0,ncol=ncol(JSR.matrix),nrow=2*(nexons-1))
+  for (ie in 1:(nexons-1)) {
+    ## 5' intron splice ratio
+    k = 2*(ie-1) + 1
+    coverage.depth0=rawData[(lRanges[ie,3]+10),]
+    index.temp=which(junctions.l[,1]==lRanges[ie,3])
+    junction.sum = apply(matrix(JSR.matrix[index.temp,],ncol=n),2,sum)
+    coverage.depth = coverage.depth0 + junction.sum
+
+    intron.splice.ratio[k,which(coverage.depth>10)]=1-(junction.sum[which(coverage.depth>10)]/coverage.depth[which(coverage.depth>10)])
+    intron.splice.ratio[k,which(coverage.depth<=10)]=median(intron.splice.ratio[k,which(coverage.depth>10)])
+    # kdeplot.hy(intron.splice.ratio[k,],xlim=c(0,1),main=paste(ie,"| 5'"))
+
+    ## 3' intron splice ratio
+    k = 2*(ie-1) + 2
+    coverage.depth0=rawData[(lRanges[(ie+1),2]-10),]
+    index.temp=which(junctions.l[,2]==lRanges[(ie+1),2])
+    junction.sum = apply(matrix(JSR.matrix[index.temp,],ncol=n),2,sum)
+    coverage.depth = coverage.depth0 + junction.sum
+
+    intron.splice.ratio[k,which(coverage.depth>10)]=1-(junction.sum[which(coverage.depth>10)]/coverage.depth[which(coverage.depth>10)])
+    intron.splice.ratio[k,which(coverage.depth<=10)]=median(intron.splice.ratio[k,which(coverage.depth>10)])
+    # kdeplot.hy(intron.splice.ratio[k,],xlim=c(0,1),main=paste(ie,"| 3'"))
+  }
+  rownames(intron.splice.ratio) = rep(c(5,3),times=(nexons-1))
+  colnames(intron.splice.ratio) = colnames(JSR.matrix)
+
+  return(list(exon.splice.ratio=exon.splice.ratio,intron.splice.ratio=intron.splice.ratio))
+}
+
+#'
+#' @export
+find_intron_outliers_ie = function(ie,Ranges,JSR.matrix,JSR.table,splice.ratio,
+                                   siglev=1e-04,cutoff.a=0.1) {
+  ## input = i (which row), JSR.matrix, JSR.table, splice.ratio
+  ## Set boxplot cutoff
+  q4=qnorm(0.75)
+  iqr.range=((qnorm(1-(siglev/2))/q4)-1)/2 # cutoff for choosing outliers
+  lRanges = Ranges$lRanges
+  nexons = nrow(lRanges)
+
+  junctions.g = matrix(as.numeric(split_junction(JSR.table[,1])),ncol=2,byrow=T)
+  junctions.l = matrix(as.numeric(split_junction(JSR.table[,2])),ncol=2,byrow=T)
+
+  k5 = 2*(ie-1) + 1
+  k3 = 2*(ie-1) + 2
+  ## 5' intron retention
+  coverage.depth0=rawData[(lRanges[ie,3]+10),]
+  index.temp=which(junctions.l[,1]==lRanges[ie,3])
+  i = index.temp[which(junctions.l[index.temp,2]==lRanges[(ie+1),2])]
+  junction.sum = apply(matrix(JSR.matrix[index.temp,],ncol=n),2,sum)
+  coverage.depth = coverage.depth0 + junction.sum
+
+  a0=boxplot.hy(splice.ratio[k5,],robust=T,print.plot=F,
+                ylim=c(0,max(splice.ratio)),
+                title=junctions.g[ie],title.cex=0.9,
+                indlist=8,indlist.col="red",
+                outliers.range=iqr.range,outliers.col="grey")
+  # kdeplot.hy(splice.ratio[ie,],indlist=a0$outliers.above,xlim=c(0,1),text=T,main=ie)
+  outliers5.tmp = outliers5.L1 = outliers5.L2 = c()
+  if ((length(which(splice.ratio[k5,]>cutoff.a))<0.1*n) & (length(a0$outliers.above)>0)) {
+    outliers5.tmp = a0$outliers.above[which(splice.ratio[k5,a0$outliers.above]>=cutoff.a)]
+    if (length(outliers5.tmp)>0) {
+      outliers5.L1 = outliers5.tmp[which((splice.ratio[k5,outliers5.tmp]-(1-ES_cutoff_fn(coverage.depth[outliers5.tmp])))>0)] # level 1 outliers
+      outliers5.L2 = outliers5.tmp[which(! outliers5.tmp %in% outliers5.L1)]
+    }
+  }
+
+  ## 3' intron retention
+  coverage.depth0=rawData[(lRanges[(ie+1),2]-10),]
+  index.temp=which(junctions.l[,2]==lRanges[(ie+1),2])
+  junction.sum = apply(matrix(JSR.matrix[index.temp,],ncol=n),2,sum)
+  coverage.depth = coverage.depth0 + junction.sum
+
+  a0=boxplot.hy(splice.ratio[k3,],robust=T,print.plot=F,
+                ylim=c(0,max(splice.ratio)),
+                title=junctions.g[ie],title.cex=0.9,
+                indlist=8,indlist.col="red",
+                outliers.range=iqr.range,outliers.col="grey")
+  # kdeplot.hy(splice.ratio[ie,],indlist=a0$outliers.above,xlim=c(0,1),text=T,main=ie)
+  outliers3.tmp = outliers3.L1 = outliers3.L2 = c()
+  if ((length(which(splice.ratio[k3,]>cutoff.a))<0.1*n) & (length(a0$outliers.above)>0)) {
+    outliers3.tmp = a0$outliers.above[which(splice.ratio[k3,a0$outliers.above]>=cutoff.a)]
+    if (length(outliers3.tmp)>0) {
+      outliers3.L1 = outliers3.tmp[which((splice.ratio[k3,outliers3.tmp]-(1-ES_cutoff_fn(coverage.depth[outliers3.tmp])))>0)] # level 1 outliers
+      outliers3.L2 = outliers3.tmp[which(! outliers3.tmp %in% outliers3.L1)]
+    }
+  }
+
+  output = rbind(matrix(cbind(outliers5.L1,
+                              rep("intron",times=length(outliers5.L1)),
+                              rep("5",times=length(outliers5.L1)),
+                              rep("Level_1",times=length(outliers5.L1)),
+                              round(splice.ratio[k5,outliers5.L1],digits=3),
+                              rep(rownames(JSR.table)[i],times=length(outliers5.L1)),
+                              matrix(JSR.table[rep(i, each = length(outliers5.L1)), ],nrow=length(outliers5.L1))),ncol=(6+ncol(JSR.table))),
+                 matrix(cbind(outliers5.L2,
+                              rep("intron",times=length(outliers5.L2)),
+                              rep("5",times=length(outliers5.L2)),
+                              rep("Level_2",times=length(outliers5.L2)),
+                              round(splice.ratio[k5,outliers5.L2],digits=3),
+                              rep(rownames(JSR.table)[i],times=length(outliers5.L2)),
+                              matrix(JSR.table[rep(i, each = length(outliers5.L2)), ],nrow=length(outliers5.L2))),ncol=(6+ncol(JSR.table))),
+                 matrix(cbind(outliers3.L1,
+                              rep("intron",times=length(outliers3.L1)),
+                              rep("3",times=length(outliers3.L1)),
+                              rep("Level_1",times=length(outliers3.L1)),
+                              round(splice.ratio[k3,outliers3.L1],digits=3),
+                              rep(rownames(JSR.table)[i],times=length(outliers3.L1)),
+                              matrix(JSR.table[rep(i, each = length(outliers3.L1)), ],nrow=length(outliers3.L1))),ncol=(6+ncol(JSR.table))),
+                 matrix(cbind(outliers3.L2,
+                              rep("intron",times=length(outliers3.L2)),
+                              rep("3",times=length(outliers3.L2)),
+                              rep("Level_2",times=length(outliers3.L2)),
+                              round(splice.ratio[k3,outliers3.L2],digits=3),
+                              rep(rownames(JSR.table)[i],times=length(outliers3.L2)),
+                              matrix(JSR.table[rep(i, each = length(outliers3.L2)), ],nrow=length(outliers3.L2))),ncol=(6+ncol(JSR.table))))
+  if (dim(output)[1]>0) {
+    colnames(output) = c("Outliers","Region","Sign","Level","Ratio","Junction.name",colnames(JSR.table))
+    output = data.frame(output)
+  } else {
+    output = NULL
+  }
+  return(output)
+}
+
+#'
+#' @export
+find_exon_outliers_i = function(i,JSR.matrix,JSR.table,splice.ratio,siglev=1e-04,
                                     cutoff.a=0.1,cutoff.b=0.9) {
+  ## input = i (which row), JSR.matrix, JSR.table, splice.ratio
+  ## Set boxplot cutoff
+  q4=qnorm(0.75)
+  iqr.range=((qnorm(1-(siglev/2))/q4)-1)/2 # cutoff for choosing outliers
 
   junctions.g = matrix(as.numeric(split_junction(JSR.table[,1])),ncol=2,byrow=T)
   junction.start = unique(junctions.g[,1])
@@ -15,23 +180,57 @@ find_junction_outliers_i = function(i,JSR.matrix,JSR.table,splice.ratio,
                 indlist=NULL,indlist.col="red",
                 outliers.range=iqr.range,outliers.col="grey")
   # Outliers with high evidence
-  outliers.tmp1 = outliers.tmp2 = c()
+  outliers.tmp1 = outliers.tmp2 = outliers.tmp1.L1 = outliers.tmp1.L2 = outliers.tmp2.L1 = outliers.tmp2.L2 = c()
   if ((length(which(splice.ratio[i,]<cutoff.b))<0.1*n) & (length(a0$outliers.below)>0)) {
     ## This is the case of possible exon skipping / cryptic events / SV
-    outliers.tmp1 = a0$outliers.below[which((splice.ratio[i,a0$outliers.below]-ES_cutoff_fn(junction.sum[a0$outliers.below]))<0)]
+    outliers.tmp1 = a0$outliers.below[which(splice.ratio[i,a0$outliers.below]<cutoff.b)]
+    outliers.tmp1.L1 = outliers.tmp1[which((splice.ratio[i,outliers.tmp1]-ES_cutoff_fn(junction.sum[outliers.tmp1]))<0)]
     # outliers.tmp1 = outliers.tmp1[sapply(outliers.tmp1,FUN=function(k) {(JSR.matrix[i,k]<(0.8*median(JSR.matrix[which(JSR.matrix[,k]>5),k])))})]
+    outliers.tmp1.L2 = outliers.tmp1[which(! outliers.tmp1 %in% outliers.tmp1.L1)]
   }
   if ((length(which(splice.ratio[i,]>cutoff.a))<0.1*n) & (length(a0$outliers.above)>0)) {
     ## This is the case of possible alternative exon / cryptic events / SV
     outliers.tmp2 = a0$outliers.above[which(splice.ratio[i,a0$outliers.above]>=cutoff.a)]
-    outliers.tmp2 = outliers.tmp2[which(sapply(outliers.tmp2,FUN=function(k) { (JSR.matrix[i,k]>max(median(JSR.matrix[which(JSR.matrix[,k]>=5),k])*0.2,10))})==T)]
+    outliers.tmp2.L1 = outliers.tmp2[which(sapply(outliers.tmp2,FUN=function(k) { (JSR.matrix[i,k]>max(median(JSR.matrix[which(JSR.matrix[,k]>=5),k])*0.2,10))})==T)]
+    outliers.tmp2.L2 = outliers.tmp2[which(! outliers.tmp2 %in% outliers.tmp2.L1)]
   }
 
-  output = rbind(matrix(cbind(outliers.tmp1,rep("-",times=length(outliers.tmp1)),matrix(JSR.table[rep(i, each = length(outliers.tmp1)), ],nrow=length(outliers.tmp1))),ncol=(2+ncol(JSR.table))),
-                 matrix(cbind(outliers.tmp2,rep("+",times=length(outliers.tmp2)),matrix(JSR.table[rep(i, each = length(outliers.tmp2)), ],nrow=length(outliers.tmp2))),ncol=(2+ncol(JSR.table))))
+  output = rbind(matrix(cbind(outliers.tmp1.L1,
+                              rep("exon",times=length(outliers.tmp1.L1)),
+                              rep("-",times=length(outliers.tmp1.L1)),
+                              rep("Level_1",times=length(outliers.tmp1.L1)),
+                              round(splice.ratio[i,outliers.tmp1.L1],digits=3),
+                              rep(rownames(JSR.table)[i],times=length(outliers.tmp1.L1)),
+                              matrix(JSR.table[rep(i, each = length(outliers.tmp1.L1)), ],nrow=length(outliers.tmp1.L1))),
+                        ncol=(6+ncol(JSR.table))),
+                 matrix(cbind(outliers.tmp1.L2,
+                              rep("exon",times=length(outliers.tmp1.L2)),
+                              rep("-",times=length(outliers.tmp1.L2)),
+                              rep("Level_2",times=length(outliers.tmp1.L2)),
+                              round(splice.ratio[i,outliers.tmp1.L2],digits=3),
+                              rep(rownames(JSR.table)[i],times=length(outliers.tmp1.L2)),
+                              matrix(JSR.table[rep(i, each = length(outliers.tmp1.L2)), ],nrow=length(outliers.tmp1.L2))),
+                        ncol=(6+ncol(JSR.table))),
+                 matrix(cbind(outliers.tmp2.L1,
+                              rep("exon",times=length(outliers.tmp2.L1)),
+                              rep("+",times=length(outliers.tmp2.L1)),
+                              rep("Level_1",times=length(outliers.tmp2.L1)),
+                              round(splice.ratio[i,outliers.tmp2.L1],digits=3),
+                              rep(rownames(JSR.table)[i],times=length(outliers.tmp2.L1)),
+                              matrix(JSR.table[rep(i, each = length(outliers.tmp2.L1)), ],nrow=length(outliers.tmp2.L1))),
+                        ncol=(6+ncol(JSR.table))),
+                 matrix(cbind(outliers.tmp2.L2,
+                              rep("exon",times=length(outliers.tmp2.L2)),
+                              rep("+",times=length(outliers.tmp2.L2)),
+                              rep("Level_2",times=length(outliers.tmp2.L2)),
+                              round(splice.ratio[i,outliers.tmp2.L2],digits=3),
+                              rep(rownames(JSR.table)[i],times=length(outliers.tmp2.L2)),
+                              matrix(JSR.table[rep(i, each = length(outliers.tmp2.L2)), ],nrow=length(outliers.tmp2.L2))),
+                        ncol=(6+ncol(JSR.table))))
+
   if (dim(output)[1]>0) {
-    colnames(output) = c("outliers","sign",colnames(JSR.table))
-    rownames(output) = rep(rownames(JSR.table)[i],times=dim(output)[1])
+    colnames(output) = c("Outliers","Region","Sign","Level","Ratio","Junction.name",colnames(JSR.table))
+    output = data.frame(output)
   } else {
     output = NULL
   }
