@@ -160,7 +160,12 @@ get_JVclass = function(LBE.position) {
   inner_fn = function(x) {
     y = apply(split_junction(x),1,FUN=function(z){strsplit(z,":")[[1]][2]})
     if ("out" %in% y) {
-      jclass = "SV"
+      j = which(grepl(pattern="out",y)==1)
+      if (! as.numeric(y[-j])==0) {
+        jclass = "Cryptic_SV"
+      } else {
+        jclass = "SV"
+      }
     } else {
       y = as.numeric(y)
       if ((y[1]<0) | (y[2]<0)) {
