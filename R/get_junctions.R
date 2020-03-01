@@ -65,6 +65,7 @@ get_junctions = function(jsrCount,Ranges) {
 
   jsrmat.g = jsrmat[which(! c(1:trow) %in% rows2exclude),]
   junction.names = paste(GeneName,"junction",1:nrow(jsrmat.g),sep="_")
+  junction.tags = paste("J",1:nrow(jsrmat.g),sep="")
   rownames(jsrmat.g) = junction.names
   # jsrmat.l = jsrmat.g
   # rownames(jsrmat.l) = junctions.l.name
@@ -73,13 +74,12 @@ get_junctions = function(jsrCount,Ranges) {
 
   ## Annotation
   LBE.position = annotate_junction(x=junctions.l,lRanges)
-  cbind(junctions.g.name,junctions.l.name,LBE.position)
 
   ## Junction classes
   JV.class = get_JVclass(LBE.position)
-  JSR.annotation = cbind(junctions.g.name,junctions.l.name,LBE.position,JV.class)
+  JSR.annotation = cbind(junctions.g.name,junctions.l.name,LBE.position,JV.class,junction.tags)
   rownames(JSR.annotation) = junction.names
-  colnames(JSR.annotation) = c("junctions.g","junctions.l","LBE.position","JV.class")
+  colnames(JSR.annotation) = c("junctions.g","junctions.l","LBE.position","JV.class","Tag")
   return(list(JSR.annotation=JSR.annotation,
               JSRmat=jsrmat.g))
 }
