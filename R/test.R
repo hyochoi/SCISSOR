@@ -26,3 +26,40 @@ flatten_gene = function(Ranges,JSR.table) {
   flat.junctions.l = sort(unique(junctions.pos))
   return(flat.junctions.l)
 }
+
+#' Get primary PO (projection outlyingness) based on some given directions
+#'
+#' @export
+get_POgivenB = function(X,B,qrsc=TRUE) {
+  # X = d by n data matrix
+  # B = d by K direction matrix
+  Y = t(apply(t(B)%*%X,1,FUN= function(t) pd.rate.hy(t,qrsc=qrsc)))
+  if (dim(Y)[1]==1) {
+    return(as.vector(Y))
+  } else {
+    return(Y)
+  }
+}
+
+#' Get a weighted sum of robust Z-scores from each dimension after removing the given direction
+#'
+#' @export
+get_resdZsum = function(X,B,weight=NULL,qrsc=TRUE) {
+  # X = d by n data matrix
+  # B = d by n direction matrix or d-dimensional vector
+  # weight = d-dimensional vector, weights for each dimension, used to calculate weighted sum
+  if (is.null(weight)) {
+    weight=rep(1,dim(X)[1])
+  }
+  get_resdZsum1d = function(X,direction,qrsc=TRUE) {
+    resdX = X - direction%*%t(direction)%*%X
+    resdZ = t(apply(resdX,1,FUN=function(t){pd.rate.hy(t,qrsc=qrsc)}))
+    return(sqrt(apply(resdZ,2,FUN=function(t){sqrt(sum(weight*(t^2)))})))
+  }
+  if (is.null(dim(B))) {
+    return(get_resdZsum1d(X=X,direction=get_unitdir(B),qrsc=qrsc))
+  } else {
+    unitB = apply(B,2,get_unitdir)
+    return(t(apply(unitB,2,FUN=function(t){get_resdZsum1d(X=X,direction=t,qrsc=qrsc)})))
+  }
+}
