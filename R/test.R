@@ -27,13 +27,22 @@ flatten_gene = function(Ranges,JSR.table) {
   return(flat.junctions.l)
 }
 
+#' Get skewness-adjusted PO based on A-D statistic
+#'
+#' @export
+POrateADadj = function(x,qrsc=TRUE) {
+  ADstat = ADstatWins.hy(x)
+  w = max(1-(ADstat/100),0.1)
+  return(w*pd.rate.hy(x,qrsc=qrsc))
+}
+
 #' Get primary PO (projection outlyingness) based on some given directions
 #'
 #' @export
 get_POgivenB = function(X,B,qrsc=TRUE) {
   # X = d by n data matrix
   # B = d by K direction matrix
-  Y = t(apply(t(B)%*%X,1,FUN= function(t) pd.rate.hy(t,qrsc=qrsc)))
+  Y = t(apply(t(B)%*%X,1,FUN= function(t) POrateADadj(t,qrsc=qrsc)))
   if (dim(Y)[1]==1) {
     return(as.vector(Y))
   } else {
@@ -41,20 +50,16 @@ get_POgivenB = function(X,B,qrsc=TRUE) {
   }
 }
 
-#' Get a weighted sum of robust Z-scores from each dimension after removing the given direction
+#' Get sum of robust Z-scores (A-D stat adjusted) from each dimension after removing the given direction
 #'
 #' @export
-get_resdZsum = function(X,B,weight=NULL,qrsc=TRUE) {
+get_resdZsum = function(X,B,qrsc=TRUE) {
   # X = d by n data matrix
   # B = d by n direction matrix or d-dimensional vector
-  # weight = d-dimensional vector, weights for each dimension, used to calculate weighted sum
-  if (is.null(weight)) {
-    weight=rep(1,dim(X)[1])
-  }
   get_resdZsum1d = function(X,direction,qrsc=TRUE) {
     resdX = X - direction%*%t(direction)%*%X
-    resdZ = t(apply(resdX,1,FUN=function(t){pd.rate.hy(t,qrsc=qrsc)}))
-    return(sqrt(apply(resdZ,2,FUN=function(t){sqrt(sum(weight*(t^2)))})))
+    resdZ = t(apply(resdX,1,FUN=function(t){POrateADadj(t,qrsc=qrsc)}))
+    return(sqrt(apply(resdZ,2,FUN=function(t){sqrt(sum(t^2))})))
   }
   if (is.null(dim(B))) {
     return(get_resdZsum1d(X=X,direction=get_unitdir(B),qrsc=qrsc))
