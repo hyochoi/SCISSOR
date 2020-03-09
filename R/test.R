@@ -53,13 +53,18 @@ get_POgivenB = function(X,B,qrsc=TRUE) {
 #' Get sum of robust Z-scores (A-D stat adjusted) from each dimension after removing the given direction
 #'
 #' @export
-get_resdZsum = function(X,B,qrsc=TRUE) {
+get_resdZsum = function(X,B,L1=TRUE,qrsc=TRUE) {
   # X = d by n data matrix
   # B = d by n direction matrix or d-dimensional vector
+  # If L1 is true (default), the L1 norm will be used to compute the sum of outlyingness. Otherwise, L2 norm will be used.
   get_resdZsum1d = function(X,direction,qrsc=TRUE) {
     resdX = X - direction%*%t(direction)%*%X
     resdZ = t(apply(resdX,1,FUN=function(t){POrateADadj(t,qrsc=qrsc)}))
-    return(sqrt(apply(resdZ,2,FUN=function(t){sqrt(sum(t^2))})))
+    if (L1) {
+      return(sqrt(apply(resdZ,2,FUN=function(t){sum(abs(t))})))
+    } else {
+      return(sqrt(apply(resdZ,2,FUN=function(t){sqrt(sum(t^2))})))
+    }
   }
   if (is.null(dim(B))) {
     return(get_resdZsum1d(X=X,direction=get_unitdir(B),qrsc=qrsc))
