@@ -23,8 +23,8 @@ flatten_gene = function(Ranges,JSR.table) {
       }
     }
   }
-  flat.junctions.l = sort(unique(junctions.pos))
-  return(flat.junctions.l)
+  flat.junctions = matrix(sort(unique(junctions.pos)),ncol=2,byrow=T)
+  return(flat.junctions)
 }
 
 #' Get skewness-adjusted PO based on A-D statistic
