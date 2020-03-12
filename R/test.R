@@ -1,3 +1,38 @@
+#' Get sparse base for flattened regions
+#'
+#' @export
+get_flatbase = function(Ranges,JSR.table) {
+
+  flat.junctions = flatten_gene(Ranges=Ranges,JSR.table=JSR.table)
+  sparse.base = apply(flat.junctions,1,collapse_junction)
+  sparse.base.name = rep(0,length(sparse.base))
+
+  nexons = dim(Ranges$lRanges)[1]
+  for (ie in 1:nexons) {
+    tmp_IDS = which((flat.junctions[,1]>=lRanges[ie,2]) & (flat.junctions[,2]<=lRanges[ie,3]))
+    if (length(tmp_IDS)>1) {
+      sparse.base.name[tmp_IDS] = paste(paste0("E",ie),1:length(tmp_IDS),sep=".")
+    } else {
+      sparse.base.name[tmp_IDS] = paste0("E",ie)
+    }
+    rm(tmp_IDS)
+    if (ie < nexons) {
+      tmp_IDS = which((flat.junctions[,1]>=lRanges[ie,3]) & (flat.junctions[,2]<=lRanges[(ie+1),2]))
+      if (length(tmp_IDS)>1) {
+        sparse.base.name[tmp_IDS] = paste(paste0("I",ie),1:length(tmp_IDS),sep=".")
+      } else {
+        sparse.base.name[tmp_IDS] = paste0("I",ie)
+      }
+    }
+  }
+  domain.name = rep("exon",length=length(sparse.base))
+  domain.name[which(grepl(pattern="I",sparse.base.name))] = "intron"
+  sparse.base = data.frame(Range=sparse.base,
+                           Domain=domain.name)
+  rownames(sparse.base) = sparse.base.name
+  return(sparse.base)
+}
+
 #' Get flattened regions of a gene based on junctions
 #'
 #' @export
