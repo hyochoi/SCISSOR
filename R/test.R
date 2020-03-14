@@ -1,15 +1,30 @@
-#' Get sparse base for flattened regions
+#' Get sparse base matrix (binary)
 #'
 #' @export
-get_flatbase = function(Ranges,JSR.table) {
+build_baseMat = function(plat.table) {
+  plat = split_junction(as.character(plat.table$Range))
+  d = max(as.numeric(plat))
+  sparse.baseMat = matrix(0,ncol=dim(plat.table)[1],nrow=d)
+  colnames(sparse.baseMat) = rownames(plat.table)
+  for (i in 1:ncol(sparse.baseMat)) {
+    tmp_bps = as.numeric(plat[,i])
+    sparse.baseMat[c(tmp_bps[1]:tmp_bps[2]),i] = 1
+  }
+  return(sparse.baseMat)
+}
 
-  flat.junctions = flatten_gene(Ranges=Ranges,JSR.table=JSR.table)
-  sparse.base = apply(flat.junctions,1,collapse_junction)
+#' Get plat base table for plat regions
+#'
+#' @export
+build_platTable = function(Ranges,JSR.table) {
+
+  plat.junctions = plat_gene(Ranges=Ranges,JSR.table=JSR.table)
+  sparse.base = apply(plat.junctions,1,collapse_junction)
   sparse.base.name = rep(0,length(sparse.base))
 
   nexons = dim(Ranges$lRanges)[1]
   for (ie in 1:nexons) {
-    tmp_IDS = which((flat.junctions[,1]>=lRanges[ie,2]) & (flat.junctions[,2]<=lRanges[ie,3]))
+    tmp_IDS = which((plat.junctions[,1]>=lRanges[ie,2]) & (plat.junctions[,2]<=lRanges[ie,3]))
     if (length(tmp_IDS)>1) {
       sparse.base.name[tmp_IDS] = paste(paste0("E",ie),1:length(tmp_IDS),sep=".")
     } else {
@@ -17,7 +32,7 @@ get_flatbase = function(Ranges,JSR.table) {
     }
     rm(tmp_IDS)
     if (ie < nexons) {
-      tmp_IDS = which((flat.junctions[,1]>=lRanges[ie,3]) & (flat.junctions[,2]<=lRanges[(ie+1),2]))
+      tmp_IDS = which((plat.junctions[,1]>=lRanges[ie,3]) & (plat.junctions[,2]<=lRanges[(ie+1),2]))
       if (length(tmp_IDS)>1) {
         sparse.base.name[tmp_IDS] = paste(paste0("I",ie),1:length(tmp_IDS),sep=".")
       } else {
@@ -33,10 +48,10 @@ get_flatbase = function(Ranges,JSR.table) {
   return(sparse.base)
 }
 
-#' Get flattened regions of a gene based on junctions
+#' Get plat regions of a gene based on junctions
 #'
 #' @export
-flatten_gene = function(Ranges,JSR.table) {
+plat_gene = function(Ranges,JSR.table) {
   lRanges = Ranges$lRanges
   nexons = dim(lRanges)[1]
   junctions.g = matrix(as.numeric(split_junction(JSR.table[,1])),ncol=2,byrow=T)
@@ -58,8 +73,8 @@ flatten_gene = function(Ranges,JSR.table) {
       }
     }
   }
-  flat.junctions = matrix(sort(unique(junctions.pos)),ncol=2,byrow=T)
-  return(flat.junctions)
+  plat.junctions = matrix(sort(unique(junctions.pos)),ncol=2,byrow=T)
+  return(plat.junctions)
 }
 
 #' Get skewness-adjusted PO based on A-D statistic
