@@ -22,7 +22,8 @@ build_platTable = function(Ranges,JSR.table) {
   sparse.base = apply(plat.junctions,1,collapse_junction)
   sparse.base.name = rep(0,length(sparse.base))
 
-  nexons = dim(Ranges$lRanges)[1]
+  lRanges = Ranges$lRanges
+  nexons = dim(lRanges)[1]
   for (ie in 1:nexons) {
     tmp_IDS = which((plat.junctions[,1]>=lRanges[ie,2]) & (plat.junctions[,2]<=lRanges[ie,3]))
     if (length(tmp_IDS)>1) {
