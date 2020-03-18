@@ -1,3 +1,108 @@
+#' Collect ATT/ATS directions
+#'
+#' @export
+build_atDir = function(inputData,Ranges,JSR.table,cutoff) {
+  ## inputData = normalized data
+  nexons = dim(Ranges$lRanges)[1]
+  # cutoff = sqrt(qchisq(p=(1-1e-04),df=11))
+
+  plat.table = build_platTable(Ranges = Ranges,JSR.table = JSR.table)
+  plat.baseMat = build_baseMat(plat.table)
+  plat.sizeMat = sqrt(t(plat.baseMat)%*%plat.baseMat)
+  normProjData = t(plat.baseMat) %*% inputData
+
+  ## ATT
+  attDir = matrix(,nrow=dim(plat.table)[1],ncol=0)
+  for (i in 1:(nexons-1)) {
+    intron.j = which(sapply(rownames(plat.table),FUN=function(t){strsplit(t,"[.]")[[1]][1]})==paste0("I",i))
+    dir1 = dir2 = matrix(0,nrow=dim(plat.table)[1],ncol=2)
+    # ATT
+    if (length(intron.j)==1) {
+      dir1[which((plat.table$Domain=="exon") & (c(1:dim(plat.table)[1]) < intron.j)),1] = 1
+      dir1[intron.j,2] = 1
+
+      dir2[which((plat.table$Domain=="exon") & (c(1:dim(plat.table)[1]) > intron.j)),1] = -1
+      dir2[intron.j,2] = 1
+    } else {
+      dir1[which((plat.table$Domain=="exon") & (c(1:dim(plat.table)[1]) < intron.j[1])),1] = 1
+      dir1[intron.j[1],2] = 1
+
+      dir2[which((plat.table$Domain=="exon") & (c(1:dim(plat.table)[1]) > intron.j[1])),1] = -1
+      dir2[intron.j[1],2] = 1
+    }
+    adj.dir1 = plat.sizeMat%*%dir1
+    adj.dir2 = plat.sizeMat%*%dir2
+
+    dir1.result = get_PO(X=t(adj.dir1)%*%normProjData,qrsc=T)
+    dir2.result = get_PO(X=t(adj.dir2)%*%normProjData,qrsc=T)
+    # dir1 result
+    dir1.out = which(dir1.result$OS>cutoff)
+    if (length(dir1.out)>0) {
+      dir1.dirtmp = matrix(dir1.result$directions[,dir1.out[which((dir1.result$directions[1,dir1.out]>0) & (dir1.result$directions[2,dir1.out]>0))]],nrow=2)
+      dir1.dirtmp = matrix(dir1.dirtmp[,which((dir1.dirtmp[1,]^2 > 0.01) & (dir1.dirtmp[2,]^2 > 0.01))],nrow=2)
+      dir1.directions = rbind(unique(dir1.dirtmp[1,]),sqrt(1-(unique(dir1.dirtmp[1,])^2)))
+      colnames(dir1.directions) = rep(paste0("ATT",i),ncol(dir1.directions))
+      attDir = cbind(attDir,dir1%*%dir1.directions)
+    }
+    # dir2 result
+    dir2.out = which(dir2.result$OS>cutoff)
+    if (length(dir2.out)>0) {
+      dir2.dirtmp = matrix(dir2.result$directions[,dir2.out[which((dir2.result$directions[1,dir2.out]>0) & (dir2.result$directions[2,dir2.out]>0))]],nrow=2)
+      dir2.dirtmp = matrix(dir2.dirtmp[,which((dir2.dirtmp[1,]^2 > 0.01) & (dir2.dirtmp[2,]^2 > 0.01))],nrow=2)
+      dir2.directions = rbind(unique(dir2.dirtmp[1,]),sqrt(1-(unique(dir2.dirtmp[1,])^2)))
+      colnames(dir2.directions) = rep(paste0("ATT",i),ncol(dir2.directions))
+      attDir = cbind(attDir,dir2%*%dir2.directions)
+    }
+    # cat(i,"\n")
+  }
+
+  ## ATS
+  atsDir = matrix(,nrow=dim(plat.table)[1],ncol=0)
+  for (i in 1:(nexons-1)) {
+    intron.j = which(sapply(rownames(plat.table),FUN=function(t){strsplit(t,"[.]")[[1]][1]})==paste0("I",i))
+    dir1 = dir2 = matrix(0,nrow=dim(plat.table)[1],ncol=2)
+    # ATS
+    if (length(intron.j)==1) {
+      dir1[which((plat.table$Domain=="exon") & (c(1:dim(plat.table)[1]) > intron.j)),1] = 1
+      dir1[intron.j,2] = 1
+
+      dir2[which((plat.table$Domain=="exon") & (c(1:dim(plat.table)[1]) < intron.j)),1] = -1
+      dir2[intron.j,2] = 1
+    } else {
+      dir1[which((plat.table$Domain=="exon") & (c(1:dim(plat.table)[1]) > intron.j[2])),1] = 1
+      dir1[intron.j[2],2] = 1
+
+      dir2[which((plat.table$Domain=="exon") & (c(1:dim(plat.table)[1]) < intron.j[2])),1] = -1
+      dir2[intron.j[2],2] = 1
+    }
+    adj.dir1 = plat.sizeMat%*%dir1
+    adj.dir2 = plat.sizeMat%*%dir2
+
+    dir1.result = get_PO(X=t(adj.dir1)%*%normProjData,qrsc=T)
+    dir2.result = get_PO(X=t(adj.dir2)%*%normProjData,qrsc=T)
+    # dir1 result
+    dir1.out = which(dir1.result$OS>cutoff)
+    if (length(dir1.out)>0) {
+      dir1.dirtmp = matrix(dir1.result$directions[,dir1.out[which((dir1.result$directions[1,dir1.out]>0) & (dir1.result$directions[2,dir1.out]>0))]],nrow=2)
+      dir1.dirtmp = matrix(dir1.dirtmp[,which((dir1.dirtmp[1,]^2 > 0.01) & (dir1.dirtmp[2,]^2 > 0.01))],nrow=2)
+      dir1.directions = rbind(unique(dir1.dirtmp[1,]),sqrt(1-(unique(dir1.dirtmp[1,])^2)))
+      colnames(dir1.directions) = rep(paste0("ATS",i),ncol(dir1.directions))
+      atsDir = cbind(atsDir,dir1%*%dir1.directions)
+    }
+    # dir2 result
+    dir2.out = which(dir2.result$OS>cutoff)
+    if (length(dir2.out)>0) {
+      dir2.dirtmp = matrix(dir2.result$directions[,dir2.out[which((dir2.result$directions[1,dir2.out]>0) & (dir2.result$directions[2,dir2.out]>0))]],nrow=2)
+      dir2.dirtmp = matrix(dir2.dirtmp[,which((dir2.dirtmp[1,]^2 > 0.01) & (dir2.dirtmp[2,]^2 > 0.01))],nrow=2)
+      dir2.directions = rbind(unique(dir2.dirtmp[1,]),sqrt(1-(unique(dir2.dirtmp[1,])^2)))
+      colnames(dir2.directions) = rep(paste0("ATS",i),ncol(dir2.directions))
+      atsDir = cbind(atsDir,dir2%*%dir2.directions)
+    }
+    # cat(i,"\n")
+  }
+  return(cbind(atsDir,attDir))
+}
+
 #' Get sparse base matrix (binary)
 #'
 #' @export
@@ -44,7 +149,8 @@ build_platTable = function(Ranges,JSR.table) {
   domain.name = rep("exon",length=length(sparse.base))
   domain.name[which(grepl(pattern="I",sparse.base.name))] = "intron"
   sparse.base = data.frame(Range=sparse.base,
-                           Domain=domain.name)
+                           Domain=domain.name,
+                           Tag=sparse.base.name)
   rownames(sparse.base) = sparse.base.name
   return(sparse.base)
 }
@@ -55,8 +161,8 @@ build_platTable = function(Ranges,JSR.table) {
 plat_gene = function(Ranges,JSR.table) {
   lRanges = Ranges$lRanges
   nexons = dim(lRanges)[1]
-  junctions.g = matrix(as.numeric(split_junction(JSR.table[,1])),ncol=2,byrow=T)
-  junctions.l = matrix(as.numeric(split_junction(JSR.table[,2])),ncol=2,byrow=T)
+  junctions.g = matrix(as.numeric(split_junction(as.character(JSR.table$junctions.g))),ncol=2,byrow=T)
+  junctions.l = matrix(as.numeric(split_junction(as.character(JSR.table$junctions.l))),ncol=2,byrow=T)
 
   tmp_junctions = sort(unique(c(1,c(junctions.l)[which((c(junctions.l)>0) & (c(junctions.l)<=max(lRanges)))],max(lRanges),lRanges[2:nexons,1]-1,lRanges[,3]+1)))
 
@@ -124,3 +230,5 @@ get_resdZsum = function(X,B,L1=TRUE,qrsc=TRUE) {
     return(t(apply(unitB,2,FUN=function(t){get_resdZsum1d(X=X,direction=t,qrsc=qrsc)})))
   }
 }
+
+
