@@ -74,14 +74,45 @@ get_junctions = function(jsrCount,Ranges) {
 
   ## Annotation
   LBE.position = annotate_junction(x=junctions.l,lRanges)
+  Region.tags = get_Tag(LBE.position)
 
   ## Junction classes
   JV.class = get_JVclass(LBE.position)
-  JSR.annotation = cbind(junctions.g.name,junctions.l.name,LBE.position,JV.class,junction.tags)
+  JSR.annotation = cbind(junctions.g.name,junctions.l.name,LBE.position,JV.class,junction.tags,Region.tags)
   rownames(JSR.annotation) = junction.names
-  colnames(JSR.annotation) = c("junctions.g","junctions.l","LBE.position","JV.class","Tag")
-  return(list(JSR.annotation=JSR.annotation,
+  colnames(JSR.annotation) = c("junctions.g","junctions.l","LBE.position","JV.class","JV.tag","Region.tag")
+
+  return(list(JSR.annotation=data.frame(JSR.annotation),
               JSRmat=jsrmat.g))
+}
+
+#'
+#' @export
+locate_region = function(tag,Ranges,JSR.table) {
+  ## example:
+  ## locate_region(tag="E1",Ranges=Ranges,JSR.table=JSR.table)
+  ## inner function
+  locate_region0 = function(tag,Ranges,JSR.table) {
+    plat.table = build_platTable(Ranges,JSR.table)
+    if (length(which(as.character(JSR.table$JV.tag)==tag))>0) {
+      return(as.character(JSR.table$junctions.l)[which(as.character(JSR.table$JV.tag)==tag)])
+    } else if ((length(which(as.character(plat.table$Tag)==tag))>0)) {
+      return(as.character(plat.table$Range)[which(as.character(plat.table$Tag)==tag)])
+    } else if (grepl(pattern="E",tag)) {
+      num = as.numeric(strsplit(tag,"E")[[1]][2])
+      return(collapse_junction(Ranges$lRanges[num,c(2,3)]))
+    } else if (grepl(pattern="I",tag)) {
+      num = as.numeric(strsplit(tag,"I")[[1]][2])
+      return(collapse_junction(c(Ranges$lRanges[num,3]+1,Ranges$lRanges[(num+1),2]-1)))
+    } else if (grepl(pattern="ATT",tag)) {
+      num = as.numeric(strsplit(tag,"ATT")[[1]][2])
+      collapse_junction(c(Ranges$lRanges[1,2],Ranges$lRanges[(num+1),2]-1))
+    } else if (grepl(pattern="ATS",tag)) {
+      num = as.numeric(strsplit(tag,"ATS")[[1]][2])
+      collapse_junction(c(Ranges$lRanges[num,3]+1,max(Ranges$lRanges)))
+    }
+  }
+  return(sapply(tag,FUN=function(t){locate_region0(tag=t,Ranges=Ranges,JSR.table=JSR.table)}))
 }
 
 #'
@@ -173,10 +204,48 @@ get_JVclass = function(LBE.position) {
       } else if ((y[1]>0) | (y[2]>0)) {
         jclass = "Cryptic_IR"
       } else {
-        jclass = "None"
+        jclass = "TBD"
       }
     }
     return(jclass)
   }
   return(sapply(LBE.position,inner_fn))
+}
+
+#'
+#' @export
+get_Tag = function(LBE.position) {
+  # Get tags
+  require(stringr)
+  LBE.position = as.character(LBE.position)
+  inner_fn = function(x) {
+    y = apply(split_junction(x),1,FUN=function(z){strsplit(z,":")[[1]][2]})
+    exon.nums = c(as.numeric(sapply(split_junction(x)[1,],FUN=function(t){strsplit(strsplit(t,":")[[1]][1],"exon")[[1]][2]})),
+                  as.numeric(sapply(split_junction(x)[2,],FUN=function(t){strsplit(strsplit(t,":")[[1]][1],"exon")[[1]][2]})))
+    JV.class = get_JVclass(x)
+    # jtag = paste("J",i,sep="")
+    jtag = "."
+    if (grepl("Cryptic",JV.class)) {
+      # For cryptic event
+      j = which((! y== "0") & (! y== "out"))
+      if (length(j)==1) {
+        if (as.numeric(y[j])<0) {
+          jtag = paste("E",exon.nums[j],sep="")
+        } else {
+          if (j==1) {
+            jtag = paste("I",exon.nums[j],sep="")
+          } else {
+            jtag = paste("I",(exon.nums[j]-1),sep="")
+          }
+        }
+      }
+    } else {
+      # For Exon-skipping (one exon)
+      if (diff(exon.nums)==2) {
+        jtag = paste("E",(exon.nums[1]+1),sep="")
+      }
+    }
+    return(jtag)
+  }
+  return(sapply(LBE.position,FUN=inner_fn))
 }
