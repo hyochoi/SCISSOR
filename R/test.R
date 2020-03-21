@@ -10,8 +10,8 @@ miscGlobal_test = function(inputData,Ranges,JSR.table,
 
   ## 1. Detecting outliers from known directions
   knownDir = build_knownDir(Ranges=Ranges,JSR.table=JSR.table)
-  platBasisDir = apply(plat.baseMat,2,FUN=function(t){t/sqrt(sum(t^2))})
-  KnownBasisDir = apply(plat.baseMat%*%knownDir,2,FUN=function(t){t/sqrt(sum(t^2))})
+  platBasisDir = apply(plat.baseMat,2,get_unitdir)
+  KnownBasisDir = apply(plat.baseMat%*%knownDir,2,get_unitdir)
 
   normProjData = t(platBasisDir) %*% normData # low-dimensional data object to be used for outlier detection
   adj.knownDir = sqrt(t(plat.baseMat)%*%plat.baseMat)%*%knownDir # adjust size of plats
@@ -230,7 +230,7 @@ build_crypticDir = function(Ranges,JSR.table) {
       } else {
         crypJDir.pos[j] = collapse_junction(c(Ranges$lRanges[LBE[1],2] - LBE[2],Ranges$lRanges[LBE[1],2]))
       }
-      crypJDir.names[j] = as.character(JSR.i$Tag)
+      crypJDir.names[j] = as.character(JSR.i$JV.tag)
     } else {
       LBE = as.numeric(LBE.tab[,LBE.which])
       if (LBE[2]<0) {
@@ -238,7 +238,7 @@ build_crypticDir = function(Ranges,JSR.table) {
       } else {
         crypJDir.pos[j] = collapse_junction(c(Ranges$lRanges[LBE[1],3],Ranges$lRanges[LBE[1],3] + LBE[2]))
       }
-      crypJDir.names[j] = as.character(JSR.i$Tag)
+      crypJDir.names[j] = as.character(JSR.i$JV.tag)
     }
   }
 
@@ -290,21 +290,21 @@ build_knownDir = function(Ranges,JSR.table) {
       if (exon.bp.tmp[1]<0) {
         basei = which((as.numeric(sapply(as.character(plat.table$Range),split_junction)[2,])<exon.bp.tmp[2]) & (plat.table$Domain=="exon"))
         JDir[basei,di] = 1
-        JDir.names = c(JDir.names,as.character(JSR.i$Tag))
+        JDir.names = c(JDir.names,as.character(JSR.i$JV.tag))
         di = di + 1
         if (diff(as.numeric(LBE.tab[1,]))>(nexons/3)) {
           JDir[which(plat.table$Domain=="exon")[which(! which(plat.table$Domain=="exon") %in% basei)],di] = 1
-          JDir.names = c(JDir.names,as.character(JSR.i$Tag))
+          JDir.names = c(JDir.names,as.character(JSR.i$JV.tag))
           di = di + 1
         }
       } else {
         basei = which((as.numeric(sapply(as.character(plat.table$Range),split_junction)[1,])>exon.bp.tmp[1]) & (plat.table$Domain=="exon"))
         JDir[basei,di] = 1
-        JDir.names = c(JDir.names,as.character(JSR.i$Tag))
+        JDir.names = c(JDir.names,as.character(JSR.i$JV.tag))
         di = di + 1
         if (diff(as.numeric(LBE.tab[1,]))>(nexons/3)) {
           JDir[which(plat.table$Domain=="exon")[which(! which(plat.table$Domain=="exon") %in% basei)],di] = 1
-          JDir.names = c(JDir.names,as.character(JSR.i$Tag))
+          JDir.names = c(JDir.names,as.character(JSR.i$JV.tag))
           di = di + 1
         }
       }
@@ -313,11 +313,11 @@ build_knownDir = function(Ranges,JSR.table) {
       basei = which(((as.numeric(sapply(as.character(plat.table$Range),split_junction)[2,])<exon.bp.tmp[2]) & (as.numeric(sapply(as.character(plat.table$Range),split_junction)[1,])>=exon.bp.tmp[1])) & (plat.table$Domain=="exon"))
       if (length(basei)>0) {
         JDir[basei,di] = 1
-        JDir.names = c(JDir.names,as.character(JSR.i$Tag))
+        JDir.names = c(JDir.names,as.character(JSR.i$JV.tag))
         di = di + 1
         if (diff(as.numeric(LBE.tab[1,]))>(nexons/3)) {
           JDir[which(plat.table$Domain=="exon")[which(! which(plat.table$Domain=="exon") %in% basei)],di] = 1
-          JDir.names = c(JDir.names,as.character(JSR.i$Tag))
+          JDir.names = c(JDir.names,as.character(JSR.i$JV.tag))
           di = di + 1
         }
       }
