@@ -43,9 +43,9 @@ miscGlobal_test = function(inputData,Ranges,JSR.table,
   # cutoff = sqrt(qchisq(p=(1-siglev),df=11))
 
   # Save results
-  OStmp = abs(knownPOminRO)
+  OStmp = knownPOminRO
   MODtmp = knownRODir
-  OUTtmp = which(OStmp>cutoff)
+  OUTtmp = which(abs(OStmp)>cutoff)
 
   ## 2. Detecting outliers from ATS/ATT directions
   atDir = build_atDir(inputData=normData,Ranges=Ranges,JSR.table=JSR.table,
@@ -57,7 +57,9 @@ miscGlobal_test = function(inputData,Ranges,JSR.table,
   atROmat = get_resdZsum(X=normProjData,B=adj.atDir,L1=FALSE)
   atRO = diag(atROmat[apply(atROmat,2,which.min),])
   atPOminRO = diag(atPOmat[apply(atROmat,2,which.min),])
-  atSC = which((abs(atPOminRO)>cutoff) & ((abs(atPOminRO)>abs(knownPOminRO)) & (atRO<knownRO)))
+  # atSC = which((abs(atPOminRO)>cutoff) & ((abs(atPOminRO)>abs(OStmp)) & (atRO<knownRO)))
+  atSC = which((abs(atPOminRO)>cutoff) & (atRO<knownRO))
+  atSC = atSC[which((knownRO^2 - atRO^2)[atSC]>qchisq(p=0.01,df=1,lower.tail=F))]
 
   ## Update the OS and MOD
   OStmp[atSC] = atPOminRO[atSC]
@@ -65,16 +67,22 @@ miscGlobal_test = function(inputData,Ranges,JSR.table,
   colnames(MODtmp)[atSC] = colnames(atPODir)[atSC]
 
   ## Get final results table
-  outliers = which(OStmp>cutoff)
+  outliers = which(abs(OStmp)>cutoff)
+  output.tag = colnames(MODtmp[,outliers])
+  if (length(which(grepl("[.]",output.tag)))>0) {
+    output.tag[which(grepl("[.]",output.tag))] =
+      sapply(output.tag[which(grepl("[.]",output.tag))],FUN=function(t){strsplit(t,"[.]")[[1]][1]})
+  }
   globalResult.table = data.frame(Outlier=outliers,
-                                  Statistic=round(OStmp[outliers],digits=3),
+                                  Statistic=round(abs(OStmp[outliers]),digits=3),
                                   Region=locate_region(tag=colnames(MODtmp[,outliers]),Ranges=Ranges,JSR.table=JSR.table),
-                                  Tag=colnames(MODtmp[,outliers]))
+                                  Region.tag=output.tag)
 
   ## Output
   outputObject = list(table=globalResult.table,
                       Outlier=globalResult.table$Outlier,
-                      OS=OStmp,
+                      OS=abs(OStmp),
+                      signOS=OStmp,
                       platBasis=plat.baseMat,
                       platMOD=MODtmp,
                       cutoff=cutoff)
@@ -136,17 +144,19 @@ miscLocal_test = function(miscGlobalResult,
   cutoff.here = max(sqrt(qchisq(siglev,df=df,lower.tail=F)),cutoff)
 
   crypOS = rep(0,n)
-  crypOS[-out1] = crypOS0
+  crypOS[-out1] = crypPO
   crypPODir = matrix(0,ncol=n,nrow=nrow(crypPODir0))
   colnames(crypPODir) = rep(".",n)
   colnames(crypPODir)[-out1] = colnames(crypPODir0)
   crypPODir[,-out1] = crypPODir0
-  out2 = which(crypOS>cutoff.here)
+  out2 = which(abs(crypOS)>cutoff.here)
 
+  region.tag = sapply(colnames(crypPODir)[out2],
+                      FUN=function(t) {as.character(JSR.table$Region.tag)[which(as.character(JSR.table$JV.tag)==t)]})
   crypResult = data.frame(Outlier=out2,
-                          Statistic=round(crypOS[out2],digits=3),
+                          Statistic=round(abs(crypOS[out2]),digits=3),
                           Region=sapply(colnames(crypPODir)[out2],FUN=function(t){crypBasisRes$BasisDir.pos[which(crypJDir.names==t)]}),
-                          Tag=colnames(crypPODir)[out2])
+                          Region.tag=region.tag)
 
   ## 2. Detect outliers from window directions
   out1 = c(miscGlobalResult$Outlier,crypResult$Outlier)
@@ -183,29 +193,52 @@ miscLocal_test = function(miscGlobalResult,
   cutoff.here = max(sqrt(qchisq(siglev,df=df,lower.tail=F)),cutoff)
 
   localOS = rep(0,n)
-  localOS[-out1] = localOS0
+  localOS[-out1] = -localOS0
   localOS[out2] = crypOS[out2]
   localMOD = matrix(0,ncol=n,nrow=d)
   localMOD[,-out1] = onoff_res$tMOD
   localMOD[,out2] = crypPODir[,out2]
 
-  out3 = which(localOS>cutoff.here)
+  out3 = which(abs(localOS)>cutoff.here)
   out3 = out3[which(! out3 %in% out2)]
-  localOutRegion = apply(matrix(localMOD[,out3],ncol=length(out3)),2,FUN=function(t){collapse_junction(c(min(which(t^2>0)),max(which(t^2>0))))})
+  if (length(out3)>0) {
+    localOutRegion = apply(matrix(localMOD[,out3],ncol=length(out3)),2,FUN=function(t){collapse_junction(c(min(which(t^2>0)),max(which(t^2>0))))})
+    region.tag = paste("E",find_exon(localOutRegion,Ranges=Ranges),sep="")
+  } else {
+    localOutRegion = NULL
+    region.tag = NULL
+  }
 
   localResult.table = data.frame(Outlier=out3,
-                                 Statistic=round(localOS[out3],digits=3),
+                                 Statistic=round(abs(localOS[out3]),digits=3),
                                  Region=localOutRegion,
-                                 Tag=rep(".",length(out3)))
+                                 Region.tag=region.tag)
   localResult.table = rbind(localResult.table,crypResult)
   localResult.table = localResult.table[order(localResult.table$Outlier),]
 
   outputObject = list(table=localResult.table,
                       Outlier=localResult.table$Outlier,
-                      OS=localOS,
-                      MOD=localMOD)
+                      OS=abs(localOS),
+                      signOS=localOS,
+                      MOD=localMOD,
+                      cutoff=cutoff.here)
   class(outputObject) = append(class(outputObject),"LSCOutput")
   return(outputObject)
+}
+
+#' Find which exon contains the position
+#'
+#' @export
+find_exon = function(position,Ranges) {
+  inner_fn = function(x) {
+    tmp.pos = as.numeric(split_junction(x))
+    if (length(tmp.pos)==1) {
+      return(which((Ranges$lRanges[,2]<=tmp.pos[1]) & (Ranges$lRanges[,3]>=tmp.pos[1])))
+    } else {
+      return(which((Ranges$lRanges[,2]<=tmp.pos[1]) & (Ranges$lRanges[,3]>=tmp.pos[2])))
+    }
+  }
+  sapply(as.character(position),inner_fn)
 }
 
 #' Collect directions for potential cryptic events
@@ -554,7 +587,7 @@ get_POgivenB = function(X,B,qrsc=TRUE) {
 #' Get sum of robust Z-scores (A-D stat adjusted) from each dimension after removing the given direction
 #'
 #' @export
-get_resdZsum = function(X,B,L1=TRUE,qrsc=TRUE) {
+get_resdZsum = function(X,B,L1=FALSE,qrsc=TRUE) {
   # X = d by n data matrix
   # B = d by n direction matrix or d-dimensional vector
   # If L1 is true (default), the L1 norm will be used to compute the sum of outlyingness. Otherwise, L2 norm will be used.
