@@ -189,13 +189,15 @@ get_JVclass = function(LBE.position) {
   # Get junction variants classes
   require(stringr)
   inner_fn = function(x) {
+    # exon.nums = as.numeric(sapply(apply(split_junction(x),1,FUN=function(z){strsplit(z,":")[[1]][1]}),
+    #                               FUN=function(t){strsplit(t,"exon")[[1]][2]}))
     y = apply(split_junction(x),1,FUN=function(z){strsplit(z,":")[[1]][2]})
     if ("out" %in% y) {
       j = which(grepl(pattern="out",y)==1)
       if (! as.numeric(y[-j])==0) {
         jclass = "Cryptic_SV"
       } else {
-        jclass = "SV"
+        jclass = "Fusion_like"
       }
     } else {
       y = as.numeric(y)
