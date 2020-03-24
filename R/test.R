@@ -1,3 +1,77 @@
+#' Get final results table from SCISSOR
+#'
+#' @export
+get_finalTable = function(miscGlobalResult,miscLocalResult,jsResult) {
+
+  region.tag = as.character(jsResult$Region.tag)
+  region.tag[which(region.tag==".")] = as.character(jsResult$JV.tag)[which(region.tag==".")]
+  jsResult$Region.tag = region.tag
+
+  miscGlobalResult$table$Type = rep("Global",dim(miscGlobalResult$table)[1])
+  miscLocalResult$table$Type = rep("Local",dim(miscLocalResult$table)[1])
+  Stable = rbind(miscGlobalResult$table,miscLocalResult$table) # Scissor results table
+  Jtable = jsResult %>% select(Outlier, VJF, JV.class, Region.tag, JV.tag) # Junction results table
+  merged = merge(x=Stable,y=Jtable,by=c("Outlier","Region.tag"),all.x=T)
+
+  ## Classify outlier types
+  class.g = as.character(merged$JV.class)
+  for (i in which(class.g=="TBD")) {
+    case = merged$Outlier[i]
+    tmp.tag = as.character(merged$Region.tag)[i]
+    if (grepl("E",tmp.tag)) {
+      if (miscGlobalResult$signOS[case]<0) {
+        class.g[i] = "ES"
+      } else if (miscGlobalResult$signOS[case]>0) {
+        class.g[i] = "AE"
+      }
+    } else if (grepl("J",tmp.tag)) {
+      if (miscGlobalResult$signOS[case]<0) {
+        class.g[i] = "Del"
+      } else if (miscGlobalResult$signOS[case]>0) {
+        class.g[i] = "Unknown"
+      }
+    } else {
+      class.g[i] = "Unknown"
+    }
+  }
+  for (i in which(is.na(class.g)==T)) {
+    case = merged$Outlier[i]
+    tmp.tag = as.character(merged$Region.tag)[i]
+    if (grepl("ATS",tmp.tag)) {
+      class.g[i] = "ATS"
+    } else if (grepl("ATT",tmp.tag)) {
+      class.g[i] = "ATT"
+    } else if (grepl("I",tmp.tag)) {
+      class.g[i] = "IR"
+    } else if (grepl("E",tmp.tag)) {
+      if (as.character(merged$Type)[i]=="Local") {
+        class.g[i] = "Del"
+      } else {
+        if (miscGlobalResult$signOS[case]<0) {
+          class.g[i] = "Del"
+        } else if (miscGlobalResult$signOS[case]>0) {
+          class.g[i] = "Unknown"
+        }
+      }
+    } else {
+      class.g[i] = "Unknown"
+    }
+  }
+  merged$Class = class.g
+
+  ## VJF for ATT events
+  class.tag = as.character(merged$Class)
+  for (i in which((class.tag=="ATS") | (class.tag=="ATT"))) {
+    merged[i,]
+    case = merged$Outlier[i]
+    tmp.tag = paste("I",strsplit(as.character(merged$Region.tag)[i],class.tag[i])[[1]][2],sep="")
+    merged[i,c(6,8)] = Jtable[which((Jtable$Outlier==case) & (as.character(Jtable$Region.tag)==tmp.tag)),] %>% select(VJF, JV.tag)
+  }
+
+  merged = merged %>% select(Outlier, Statistic, Class, Region, Region.tag, VJF, JV.tag, Type)
+  return(merged)
+}
+
 #' Detect local shape changes
 #'
 #' @export
