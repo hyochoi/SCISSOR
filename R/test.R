@@ -11,8 +11,20 @@ get_finalTable = function(miscGlobalResult,miscLocalResult,jsResult) {
   miscLocalResult$table$Type = rep("Local",dim(miscLocalResult$table)[1])
   Stable = rbind(miscGlobalResult$table,miscLocalResult$table) # Scissor results table
   Jtable = jsResult %>% select(Outlier, VJF, JV.class, Region.tag, JV.tag) # Junction results table
-  merged = merge(x=Stable,y=Jtable,by=c("Outlier","Region.tag"),all.x=T)
+  merged0 = merge(x=Jtable,y=Stable,by=c("Outlier"),all.x=T)
+  # Jtable = merged0[which(apply(merged0 %>% select(Region.tag.x,Region.tag.y),1,
+  #                              FUN=function(t){grepl(pattern=t[1],t[2])})==1),] %>% select(Outlier,VJF,JV.class,Region.tag.x,JV.tag)
+  Jtable = merged0[which((apply(merged0 %>% select(Region.tag.x,Region.tag.y),1,
+                                FUN=function(t){grepl(pattern=t[1],t[2])})==1) | (grepl("J",as.character(merged0$Region.tag.x)))),] %>% select(Outlier,VJF,JV.class,Region.tag.x,JV.tag)
+  colnames(Jtable)[which(colnames(Jtable)=="Region.tag.x")] = "Region.tag"
 
+  # merged = merge(x=Stable,y=Jtable,by=c("Outlier","Region.tag"),all.x=T)
+  merged = merge(x=Stable,y=Jtable,by=c("Outlier"),all.x=T)
+  colnames(merged)[which(colnames(merged)=="Region.tag.x")] = "Region.tag"
+  colnames(merged)[which(colnames(merged)=="Region.tag.y")] = "JV.Region.tag"
+
+  # merged[which((! apply(merged %>% select(JV.Region.tag,Region.tag),1,
+  #                FUN=function(t){grepl(pattern=t[1],t[2])})==1) & (grepl("J",as.character(merged$JV.Region.tag)))),]
   ## Classify outlier types
   class.g = as.character(merged$JV.class)
   for (i in which(class.g=="TBD")) {
@@ -68,7 +80,7 @@ get_finalTable = function(miscGlobalResult,miscLocalResult,jsResult) {
     merged[i,c(6,8)] = Jtable[which((Jtable$Outlier==case) & (as.character(Jtable$Region.tag)==tmp.tag)),] %>% select(VJF, JV.tag)
   }
 
-  merged = merged %>% select(Outlier, Statistic, Class, Region, Region.tag, VJF, JV.tag, Type)
+  merged = merged %>% select(Outlier, Statistic, Class, Region, Region.tag, VJF, JV.Region.tag, JV.tag, Type)
   return(merged)
 }
 
@@ -638,7 +650,7 @@ plat_gene = function(Ranges,JSR.table) {
 #' Get skewness-adjusted PO based on A-D statistic
 #'
 #' @export
-POrateADadj = function(x,qrsc=TRUE) {
+POrateADadj = function(x,qrsc=FALSE) {
   ADstat = ADstatWins.hy(x)
   w = max(1-(ADstat/100),0.1)
   return(w*pd.rate.hy(x,qrsc=qrsc))
@@ -647,7 +659,7 @@ POrateADadj = function(x,qrsc=TRUE) {
 #' Get primary PO (projection outlyingness) based on some given directions
 #'
 #' @export
-get_POgivenB = function(X,B,qrsc=TRUE) {
+get_POgivenB = function(X,B,qrsc=FALSE) {
   # X = d by n data matrix
   # B = d by K direction matrix
   Y = t(apply(t(B)%*%X,1,FUN= function(t) POrateADadj(t,qrsc=qrsc)))
@@ -661,17 +673,30 @@ get_POgivenB = function(X,B,qrsc=TRUE) {
 #' Get sum of robust Z-scores (A-D stat adjusted) from each dimension after removing the given direction
 #'
 #' @export
-get_resdZsum = function(X,B,L1=FALSE,qrsc=TRUE) {
+get_resdZsum1d = function(X,direction,L1=FALSE,qrsc=FALSE) {
+  resdX = X - direction%*%t(direction)%*%X
+  resdZ = t(apply(resdX,1,FUN=function(t){POrateADadj(t,qrsc=qrsc)}))
+  if (L1) {
+    return(apply(resdZ,2,FUN=function(t){sum(abs(t))}))
+  } else {
+    return(sqrt(apply(resdZ,2,FUN=function(t){sum(t^2)})))
+  }
+}
+
+#' Get sum of robust Z-scores (A-D stat adjusted) from each dimension after removing the given direction
+#'
+#' @export
+get_resdZsum = function(X,B,L1=FALSE,qrsc=FALSE) {
   # X = d by n data matrix
   # B = d by n direction matrix or d-dimensional vector
   # If L1 is true (default), the L1 norm will be used to compute the sum of outlyingness. Otherwise, L2 norm will be used.
-  get_resdZsum1d = function(X,direction,qrsc=TRUE) {
+  get_resdZsum1d = function(X,direction,qrsc=FALSE) {
     resdX = X - direction%*%t(direction)%*%X
     resdZ = t(apply(resdX,1,FUN=function(t){POrateADadj(t,qrsc=qrsc)}))
     if (L1) {
-      return(sqrt(apply(resdZ,2,FUN=function(t){sum(abs(t))})))
+      return(apply(resdZ,2,FUN=function(t){sum(abs(t))}))
     } else {
-      return(sqrt(apply(resdZ,2,FUN=function(t){sqrt(sum(t^2))})))
+      return(sqrt(apply(resdZ,2,FUN=function(t){sum(t^2)})))
     }
   }
   if (is.null(dim(B))) {
