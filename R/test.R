@@ -211,23 +211,30 @@ miscLocal_test = function(miscGlobalResult,
   inputData2 = inputData[,which(! c(1:n) %in% out1)]
 
   crypPOmat = get_POgivenB(X=inputData2,B=crypBasisDir)
+  rows.incl = c(1:nrow(crypPOmat))
+  # rows.incl = c(1:nrow(crypPOmat))[(! 1:nrow(crypPOmat) %in% which((grepl("E",get_Tag(JSR.table$LBE.position[sapply(rownames(crypPOmat),FUN=function(t){which(JSR.table$JV.tag==t)})]))) & (apply(crypPOmat,1,ADstatWins.hy)>ADcutoff)))]
+  crypPOmat = crypPOmat[rows.incl,]
   crypPO = diag(crypPOmat[apply(abs(crypPOmat),2,which.max),])
-  crypPODir0 = crypBasisDir[,apply(abs(crypPOmat),2,which.max)]
+  crypPODir0 = crypBasisDir[,rows.incl[apply(abs(crypPOmat),2,which.max)]]
 
   crypOS0 = abs(crypPO)
   ks.pval=ks.stat=rep(0,20)
-  for (df in 1:20) {
-    # hist(pchisq(onoff_stat^2,df=df,lower.tail=F),main=df)
-    temp.out=which(crypOS0>sqrt(qchisq(siglev,df=df,lower.tail=F)))
-    temp.zero=which(crypOS0^2 < 1e-10)
-    ks.output=ks.test(crypOS0[which(! c(1:length(crypOS0)) %in% c(temp.out,temp.zero))]^2,pchisq,df)
-    ks.pval[df]=ks.output$p.value
-    ks.stat[df]=ks.output$statistic
-    # cat(paste(df,"|",round(ks.pval[df],digits=5),"|",
-    #           round(ks.stat[df],digits=3)),"\n")
+  temp.zero=which(crypOS0^2 < 1e-10)
+  if (length(temp.zero)<(0.5*length(temp.zero))) {
+    for (df in 1:20) {
+      # hist(pchisq(onoff_stat^2,df=df,lower.tail=F),main=df)
+      temp.out=which(crypOS0>sqrt(qchisq(siglev,df=df,lower.tail=F)))
+      ks.output=ks.test(crypOS0[which(! c(1:length(crypOS0)) %in% c(temp.out,temp.zero))]^2,pchisq,df)
+      ks.pval[df]=ks.output$p.value
+      ks.stat[df]=ks.output$statistic
+      # cat(paste(df,"|",round(ks.pval[df],digits=5),"|",
+      #           round(ks.stat[df],digits=3)),"\n")
+    }
+    df=which.min(ks.stat)
+    cutoff.here = max(sqrt(qchisq(siglev,df=df,lower.tail=F)),cutoff)
+  } else {
+    cutoff.here = cutoff
   }
-  df=which.min(ks.stat)
-  cutoff.here = max(sqrt(qchisq(siglev,df=df,lower.tail=F)),cutoff)
 
   crypOS = rep(0,n)
   crypOS[-out1] = crypPO
@@ -237,12 +244,14 @@ miscLocal_test = function(miscGlobalResult,
   crypPODir[,-out1] = crypPODir0
   out2 = which(abs(crypOS)>cutoff.here)
 
+  basis.tag = colnames(crypPODir)[out2]
   region.tag = sapply(colnames(crypPODir)[out2],
                       FUN=function(t) {as.character(JSR.table$Region.tag)[which(as.character(JSR.table$JV.tag)==t)]})
   crypResult = data.frame(Outlier=out2,
                           Statistic=round(abs(crypOS[out2]),digits=3),
                           Region=sapply(colnames(crypPODir)[out2],FUN=function(t){crypBasisRes$BasisDir.pos[which(crypJDir.names==t)]}),
-                          Region.tag=region.tag)
+                          Region.tag=region.tag,
+                          Basis.tag=basis.tag)
 
   ## 2. Detect outliers from window directions
   out1 = c(miscGlobalResult$Outlier,crypResult$Outlier)
@@ -259,24 +268,28 @@ miscLocal_test = function(miscGlobalResult,
   residualData2 = inputData[,which(! c(1:n) %in% out1)]
   pileupData2 = pileupData[,which(! c(1:n) %in% out1)]
 
-  onoff_res = get_offstat(residualData=residualData2,pileupData=pileupData2,
+  onoff_res = get_offstat_2(residualData=residualData2,pileupData=pileupData2,
                           exonset=exonset,ADcutoff=ADcutoff,
                           windowSize=windowSize,readconstr=10)
 
   localOS0 = onoff_res$stat
   ks.pval=ks.stat=rep(0,20)
-  for (df in 1:20) {
+  temp.zero=which(localOS0^2 < 1e-10)
+  if (length(temp.zero)<(0.5*length(temp.zero))) {
+    for (df in 1:20) {
     # hist(pchisq(onoff_stat^2,df=df,lower.tail=F),main=df)
     temp.out=which(localOS0>sqrt(qchisq(siglev,df=df,lower.tail=F)))
-    temp.zero=which(localOS0^2 < 1e-10)
     ks.output=ks.test(localOS0[which(! c(1:length(localOS0)) %in% c(temp.out,temp.zero))]^2,pchisq,df)
     ks.pval[df]=ks.output$p.value
     ks.stat[df]=ks.output$statistic
-    # cat(paste(df,"|",round(ks.pval[df],digits=5),"|",
-    #           round(ks.stat[df],digits=3)),"\n")
+    cat(paste(df,"|",round(ks.pval[df],digits=5),"|",
+              round(ks.stat[df],digits=3)),"\n")
   }
-  df=which.min(ks.stat)
-  cutoff.here = max(sqrt(qchisq(siglev,df=df,lower.tail=F)),cutoff)
+    df=which.min(ks.stat)
+    cutoff.here = max(sqrt(qchisq(siglev,df=df,lower.tail=F)),cutoff)
+  } else {
+    cutoff.here = cutoff
+  }
 
   localOS = rep(0,n)
   localOS[-out1] = -localOS0
@@ -290,15 +303,16 @@ miscLocal_test = function(miscGlobalResult,
   if (length(out3)>0) {
     localOutRegion = apply(matrix(localMOD[,out3],ncol=length(out3)),2,FUN=function(t){collapse_junction(c(min(which(t^2>0)),max(which(t^2>0))))})
     region.tag = paste("E",find_exon(localOutRegion,Ranges=Ranges),sep="")
+    basis.tag = rep(".",length(out3))
   } else {
-    localOutRegion = NULL
-    region.tag = NULL
+    localOutRegion = region.tag = basis.tag = NULL
   }
 
   localResult.table = data.frame(Outlier=out3,
                                  Statistic=round(abs(localOS[out3]),digits=3),
                                  Region=localOutRegion,
-                                 Region.tag=region.tag)
+                                 Region.tag=region.tag,
+                                 Basis.tag=basis.tag)
   localResult.table = rbind(localResult.table,crypResult)
   localResult.table = localResult.table[order(localResult.table$Outlier),]
 
@@ -311,6 +325,94 @@ miscLocal_test = function(miscGlobalResult,
   class(outputObject) = append(class(outputObject),"LSCOutput")
   return(outputObject)
 }
+
+#' @export
+get_offstat_2 = function(residualData,pileupData,exonset,ADcutoff=3,
+                      windowSize=100,readconstr=10) {
+  ## Step 2 : detect "off" outliers
+  require(zoo)
+  # Find eligible regions
+  n2 = ncol(residualData)
+  medvec = apply(pileupData,1,median)
+
+  if (nrow(exonset)==1) {
+    exon.base=c(exonset[1,2]:exonset[1,3])
+  } else {
+    exon.base=c()
+    for (i in 1:(nrow(exonset)-1)) {
+      exon.base=c(exon.base,c(exonset[i,2]:exonset[i,3]))
+    }
+  }
+  std.overall=t(apply(residualData[exon.base,],1,pd.rate.hy))
+  mad.overall=apply(std.overall,2,mad)
+  mad.overall[which(mad.overall<1)]=1
+  residualData = sweep(residualData,2,mad.overall,"/");
+
+  medvec.case = apply(pileupData[exon.base,],2,median)
+  medvec.case01 = rep(0,n2); medvec.case01[which(medvec.case>10)]=1;
+  window_min = rollapply(medvec,width=windowSize,FUN=min) # min of med
+  # window_mean = rollapply(medvec,width=windowSize,FUN=mean)
+
+  window_idx0 = which(window_min>=readconstr)
+  window_idx1 = window_idx0[which(window_idx0 %in% exon.base)]
+  window_idx = window_idx1[which(window_min[window_idx1]>=quantile(window_min[window_idx1],probs=0.1))] # do we really need this?
+
+  # Find exons whose lengths are less than the pre-determined size.
+  smallexon_0 = which((exonset[1:(nrow(exonset)-1),3]-exonset[1:(nrow(exonset)-1),2]+1)<windowSize)
+  smallexon_min = c()
+  for (j in smallexon_0) {
+    smallexon_min = min(medvec[c(exonset[j,2]:exonset[j,3])])
+  }
+  smallexon = smallexon_0[which(smallexon_min>=readconstr)]
+
+  # Determine window size
+  winsize_vec = rep(0,length(window_min))
+  winsize_vec[window_idx] = windowSize;
+  winsize_vec[exonset[smallexon,2]] = exonset[smallexon,3]-exonset[smallexon,2]+1
+
+  # Final start_positions for calculating statistics
+  window_site = which(winsize_vec>0)
+  window_size = winsize_vec[window_site]
+  pdrate = matrix(0,nrow=length(window_site),ncol=ncol(residualData))
+  tMOD=matrix(0,nrow=nrow(pileupData),ncol=n2) # temp MOD
+  tNPS=matrix(0,nrow=n2,ncol=n2) # temp NPS
+  if (length(window_site)>0) {
+    for (i in which((window_site>100) & (window_site<(nrow(residualData)-100)))) {
+      carea = c((window_site[i]):(window_site[i]-1+window_size[i]));
+      # pdrate[i,] = pd.rate.hy(-apply(residualData[carea,],2,sum),qrsc=T);
+      pdrate[i,] = pd.rate.hy(-apply(residualData[carea,],2,sum),qrsc=T);
+    }
+    outdir = which(apply(pdrate,1,ADstatWins.hy)>=ADcutoff)
+    pdrate[outdir,]=0
+
+    pdrate2 = sweep(pdrate,2,medvec.case01,"*")
+    # inner.std=function(x) {
+    #   m=mad(x)
+    #   if (m>1) {
+    #     return(x/m)
+    #   } else {
+    #     return(x)
+    #   }
+    # }
+    # pdrate3=apply(pdrate2,2,inner.std)
+    pdrate3=pdrate2
+    off_stat = apply(pdrate3,2,max)
+    where_on = apply(pdrate3,2,which.max)
+
+    for (j in 1:n2) {
+      start_loc = window_site[where_on[j]]
+      end_loc = start_loc + window_size[where_on[j]] - 1
+      carea = c(start_loc:end_loc)
+      tMOD[carea,j] = -1/sqrt(length(carea))
+      tNPS[,j] = pdrate3[where_on[j],]
+    }
+  } else {
+    off_stat = rep(0,ncol(residualData))
+  }
+
+  return(list(stat=off_stat,tMOD=tMOD,tNPS=tNPS))
+}
+
 
 #' Find which exon contains the position
 #'
@@ -342,6 +444,7 @@ build_crypticDir = function(Ranges,JSR.table) {
     JSR.i = JSR.table[i,]
     LBE.tab = sapply(c(split_junction(as.character(JSR.i$LBE.position))),FUN=function(t){c(strsplit(strsplit(t,":")[[1]][1],"exon")[[1]][2],strsplit(t,":")[[1]][2])})
     LBE.which = which((! LBE.tab[2,]=="out") & (! LBE.tab[2,]=="0"))
+    # cat(paste(j,"|",length(LBE.which)),"\n")
     if (LBE.which==2) {
       LBE = as.numeric(LBE.tab[,LBE.which])
       if (LBE[2]<0) {

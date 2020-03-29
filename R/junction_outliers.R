@@ -186,13 +186,13 @@ find_exon_outliers_i = function(i,JSR.matrix,JSR.table,splice.ratio,siglev=1e-04
                 outliers.range=iqr.range,outliers.col="grey")
   # Outliers with high evidence
   outliers.tmp1 = outliers.tmp2 = outliers.tmp1.L1 = outliers.tmp1.L2 = outliers.tmp2.L1 = outliers.tmp2.L2 = c()
-  # if ((length(which(splice.ratio[i,]<cutoff.b))<0.1*n) & (length(a0$outliers.below)>0)) {
-  #   ## This is the case of possible exon skipping / cryptic events / SV
-  #   outliers.tmp1 = a0$outliers.below[which(splice.ratio[i,a0$outliers.below]<cutoff.b)]
-  #   outliers.tmp1.L1 = outliers.tmp1[which((splice.ratio[i,outliers.tmp1]-ES_cutoff_fn(junction.sum[outliers.tmp1]))<0)]
-  #   # outliers.tmp1 = outliers.tmp1[sapply(outliers.tmp1,FUN=function(k) {(JSR.matrix[i,k]<(0.8*median(JSR.matrix[which(JSR.matrix[,k]>5),k])))})]
-  #   outliers.tmp1.L2 = outliers.tmp1[which(! outliers.tmp1 %in% outliers.tmp1.L1)]
-  # }
+  if ((length(which(splice.ratio[i,]<cutoff.b))<0.1*n) & (length(a0$outliers.below)>0)) {
+    ## This is the case of possible exon skipping / cryptic events / SV
+    outliers.tmp1 = a0$outliers.below[which(splice.ratio[i,a0$outliers.below]<cutoff.b)]
+    outliers.tmp1.L1 = outliers.tmp1[which((splice.ratio[i,outliers.tmp1]-ES_cutoff_fn(junction.sum[outliers.tmp1]))<0)]
+    outliers.tmp1 = outliers.tmp1[sapply(outliers.tmp1,FUN=function(k) {(JSR.matrix[i,k]<(0.8*median(JSR.matrix[which(JSR.matrix[,k]>5),k])))})]
+    outliers.tmp1.L2 = outliers.tmp1[which(! outliers.tmp1 %in% outliers.tmp1.L1)]
+  }
   if ((length(which(splice.ratio[i,]>cutoff.a))<0.1*n) & (length(a0$outliers.above)>0)) {
     ## This is the case of possible alternative exon / cryptic events / SV
     outliers.tmp2 = a0$outliers.above[which(splice.ratio[i,a0$outliers.above]>=cutoff.a)]
