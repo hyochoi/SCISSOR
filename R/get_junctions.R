@@ -32,10 +32,11 @@ get_junctions = function(jsrCount,Ranges) {
   rownames(jsrmat0)=jsrsite0
   colnames(jsrmat0)=caseIDs
 
-  # Remove NA-NA row
+  # Remove NA-NA row / Remove reads from outside to outside of the gene
   # head(jsrsite0)
   temp = split_junction(jsrsite0)
   rmj = which((temp[1,]=="NA") | (temp[2,]=="NA"))
+  rmj = c(rmj,which((apply(temp,2,max)<min(Ranges$gRanges)) | (apply(temp,2,min)>max(Ranges$gRanges))))
   jsrsite0 = jsrsite0[-rmj]
   jsrmat0 = jsrmat0[-rmj,]
   # cat(paste("# of different splicing =",length(jsrsite0)),"\n")
@@ -240,6 +241,11 @@ get_Tag = function(LBE.position) {
             jtag = paste("I",(exon.nums[j]-1),sep="")
           }
         }
+      }
+    } else if ("out" %in% y) {
+      if (diff(exon.nums)==1) {
+        j = which(y=="out")
+        jtag = paste("E",exon.nums[j],sep="")
       }
     } else {
       # For Exon-skipping (one exon)
