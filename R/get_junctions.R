@@ -107,10 +107,12 @@ locate_region = function(tag,Ranges,JSR.table) {
       return(collapse_junction(c(Ranges$lRanges[num,3]+1,Ranges$lRanges[(num+1),2]-1)))
     } else if (grepl(pattern="ATT",tag)) {
       num = as.numeric(strsplit(tag,"ATT")[[1]][2])
-      collapse_junction(c(Ranges$lRanges[1,2],Ranges$lRanges[(num+1),2]-1))
+      return(collapse_junction(c(Ranges$lRanges[1,2],Ranges$lRanges[(num+1),2]-1)))
     } else if (grepl(pattern="ATS",tag)) {
       num = as.numeric(strsplit(tag,"ATS")[[1]][2])
-      collapse_junction(c(Ranges$lRanges[num,3]+1,max(Ranges$lRanges)))
+      return(collapse_junction(c(Ranges$lRanges[num,3]+1,max(Ranges$lRanges))))
+    } else {
+      return(".")
     }
   }
   return(sapply(tag,FUN=function(t){locate_region0(tag=t,Ranges=Ranges,JSR.table=JSR.table)}))

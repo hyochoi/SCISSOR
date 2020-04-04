@@ -132,9 +132,14 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
     x.labels.l = c(Ranges$Gene,Ranges$lRanges[2:nrow(Ranges$lRanges),2],max(Ranges$lRanges))
     x.labels.c = c(Ranges$Gene,Ranges$cRanges[2:nrow(Ranges$lRanges),1],max(Ranges$cRanges))
     x.labels.g = c(Ranges$chr,Ranges$gRanges[2:nrow(Ranges$gRanges),2],max(Ranges$gRanges))
+
+    exon.tick.at = c(1,apply(Ranges$lRanges[,c(2,3)],1,mean))
+    exon.labels = c(Ranges$Gene,paste("E",1:dim(Ranges$lRanges)[1],sep=""))
     axis(side=1, tck=-0.01, at=x.tick.at, labels=NA, col.ticks="darkgrey") ;
+    # axis(side=1, lwd=0, line=-1, cex.axis=0.8,col.axis="darkgrey",
+    #      at=x.tick.at,labels=x.labels.c) ;
     axis(side=1, lwd=0, line=-1, cex.axis=0.8,col.axis="darkgrey",
-         at=x.tick.at,labels=x.labels.c) ;
+         at=exon.tick.at,labels=exon.labels) ;
     axis(side=1, lwd=0, line=-0.1, cex.axis=0.8,col.axis="darkgrey",
          at=x.tick.at,labels=x.labels.g) ;
     mtext(side=1, xlab, line=2, cex=1) ;
