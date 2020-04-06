@@ -95,7 +95,7 @@ miscGlobal_test = function(inputData,Ranges,JSR.table,
   plat.baseMat = build_baseMat(plat.table)
 
   ## 1. Detecting outliers from known directions
-  knownDir = build_knownDir(Ranges=Ranges,JSR.table=JSR.table)
+  knownDir = build_knownDir(plat.table=plat.table,Ranges=Ranges,JSR.table=JSR.table)
   platBasisDir = apply(plat.baseMat,2,get_unitdir)
   KnownBasisDir = apply(plat.baseMat%*%knownDir,2,get_unitdir)
 
@@ -134,7 +134,7 @@ miscGlobal_test = function(inputData,Ranges,JSR.table,
   OUTtmp = which(abs(OStmp)>cutoff)
 
   ## 2. Detecting outliers from ATS/ATT directions
-  atDir = build_atDir(inputData=normData,Ranges=Ranges,JSR.table=JSR.table,
+  atDir = build_atDir(plat.table=plat.table,inputData=normData,Ranges=Ranges,JSR.table=JSR.table,
                       cutoff=cutoff)
   adj.atDir = sqrt(t(plat.baseMat)%*%plat.baseMat)%*%atDir
   atPOmat = get_POgivenB(X=normProjData,B=adj.atDir)
@@ -210,12 +210,13 @@ miscLocal_test = function(miscGlobalResult,
   out1 = miscGlobalResult$Outlier
   inputData2 = inputData[,which(! c(1:n) %in% out1)]
 
-  crypPOmat = get_POgivenB(X=inputData2,B=crypBasisDir)
-  rows.incl = c(1:nrow(crypPOmat))
-  # rows.incl = c(1:nrow(crypPOmat))[(! 1:nrow(crypPOmat) %in% which((grepl("E",get_Tag(JSR.table$LBE.position[sapply(rownames(crypPOmat),FUN=function(t){which(JSR.table$JV.tag==t)})]))) & (apply(crypPOmat,1,ADstatWins.hy)>ADcutoff)))]
-  crypPOmat = crypPOmat[rows.incl,]
+  crypPOmat = get_POgivenB(X=inputData2,B=crypBasisDir,qrsc=TRUE)
   crypPO = diag(crypPOmat[apply(abs(crypPOmat),2,which.max),])
-  crypPODir0 = crypBasisDir[,rows.incl[apply(abs(crypPOmat),2,which.max)]]
+  crypPODir0 = crypBasisDir[,apply(abs(crypPOmat),2,which.max)]
+  # rows.incl = c(1:nrow(crypPOmat))[(! 1:nrow(crypPOmat) %in% which((grepl("E",get_Tag(JSR.table$LBE.position[sapply(rownames(crypPOmat),FUN=function(t){which(JSR.table$JV.tag==t)})]))) & (apply(crypPOmat,1,ADstatWins.hy)>ADcutoff)))]
+  # crypPOmat = crypPOmat[rows.incl,]
+  # crypPO = diag(crypPOmat[apply(abs(crypPOmat),2,which.max),])
+  # crypPODir0 = crypBasisDir[,rows.incl[apply(abs(crypPOmat),2,which.max)]]
 
   crypOS0 = abs(crypPO)
   ks.pval=ks.stat=rep(0,20)
@@ -223,7 +224,7 @@ miscLocal_test = function(miscGlobalResult,
   if (length(temp.zero)<(0.5*length(temp.zero))) {
     for (df in 1:20) {
       # hist(pchisq(onoff_stat^2,df=df,lower.tail=F),main=df)
-      temp.out=which(crypOS0>sqrt(qchisq(siglev,df=df,lower.tail=F)))
+      temp.out=which(crypOS0>sqrt(qchisq(0.001,df=df,lower.tail=F)))
       ks.output=ks.test(crypOS0[which(! c(1:length(crypOS0)) %in% c(temp.out,temp.zero))]^2,pchisq,df)
       ks.pval[df]=ks.output$p.value
       ks.stat[df]=ks.output$statistic
@@ -268,7 +269,7 @@ miscLocal_test = function(miscGlobalResult,
   residualData2 = inputData[,which(! c(1:n) %in% out1)]
   pileupData2 = pileupData[,which(! c(1:n) %in% out1)]
 
-  onoff_res = get_offstat_2(residualData=residualData2,pileupData=pileupData2,
+  onoff_res = get_offstat(residualData=residualData2,pileupData=pileupData2,
                           exonset=exonset,ADcutoff=ADcutoff,
                           windowSize=windowSize,readconstr=10)
 
@@ -278,7 +279,7 @@ miscLocal_test = function(miscGlobalResult,
   if (length(temp.zero)<(0.5*length(temp.zero))) {
     for (df in 1:20) {
     # hist(pchisq(onoff_stat^2,df=df,lower.tail=F),main=df)
-    temp.out=which(localOS0>sqrt(qchisq(siglev,df=df,lower.tail=F)))
+    temp.out=which(localOS0>sqrt(qchisq(0.001,df=df,lower.tail=F)))
     ks.output=ks.test(localOS0[which(! c(1:length(localOS0)) %in% c(temp.out,temp.zero))]^2,pchisq,df)
     ks.pval[df]=ks.output$p.value
     ks.stat[df]=ks.output$statistic
@@ -326,94 +327,6 @@ miscLocal_test = function(miscGlobalResult,
   return(outputObject)
 }
 
-#' @export
-get_offstat_2 = function(residualData,pileupData,exonset,ADcutoff=3,
-                      windowSize=100,readconstr=10) {
-  ## Step 2 : detect "off" outliers
-  require(zoo)
-  # Find eligible regions
-  n2 = ncol(residualData)
-  medvec = apply(pileupData,1,median)
-
-  if (nrow(exonset)==1) {
-    exon.base=c(exonset[1,2]:exonset[1,3])
-  } else {
-    exon.base=c()
-    for (i in 1:(nrow(exonset)-1)) {
-      exon.base=c(exon.base,c(exonset[i,2]:exonset[i,3]))
-    }
-  }
-  std.overall=t(apply(residualData[exon.base,],1,pd.rate.hy))
-  mad.overall=apply(std.overall,2,mad)
-  mad.overall[which(mad.overall<1)]=1
-  residualData = sweep(residualData,2,mad.overall,"/");
-
-  medvec.case = apply(pileupData[exon.base,],2,median)
-  medvec.case01 = rep(0,n2); medvec.case01[which(medvec.case>10)]=1;
-  window_min = rollapply(medvec,width=windowSize,FUN=min) # min of med
-  # window_mean = rollapply(medvec,width=windowSize,FUN=mean)
-
-  window_idx0 = which(window_min>=readconstr)
-  window_idx1 = window_idx0[which(window_idx0 %in% exon.base)]
-  window_idx = window_idx1[which(window_min[window_idx1]>=quantile(window_min[window_idx1],probs=0.1))] # do we really need this?
-
-  # Find exons whose lengths are less than the pre-determined size.
-  smallexon_0 = which((exonset[1:(nrow(exonset)-1),3]-exonset[1:(nrow(exonset)-1),2]+1)<windowSize)
-  smallexon_min = c()
-  for (j in smallexon_0) {
-    smallexon_min = min(medvec[c(exonset[j,2]:exonset[j,3])])
-  }
-  smallexon = smallexon_0[which(smallexon_min>=readconstr)]
-
-  # Determine window size
-  winsize_vec = rep(0,length(window_min))
-  winsize_vec[window_idx] = windowSize;
-  winsize_vec[exonset[smallexon,2]] = exonset[smallexon,3]-exonset[smallexon,2]+1
-
-  # Final start_positions for calculating statistics
-  window_site = which(winsize_vec>0)
-  window_size = winsize_vec[window_site]
-  pdrate = matrix(0,nrow=length(window_site),ncol=ncol(residualData))
-  tMOD=matrix(0,nrow=nrow(pileupData),ncol=n2) # temp MOD
-  tNPS=matrix(0,nrow=n2,ncol=n2) # temp NPS
-  if (length(window_site)>0) {
-    for (i in which((window_site>100) & (window_site<(nrow(residualData)-100)))) {
-      carea = c((window_site[i]):(window_site[i]-1+window_size[i]));
-      # pdrate[i,] = pd.rate.hy(-apply(residualData[carea,],2,sum),qrsc=T);
-      pdrate[i,] = pd.rate.hy(-apply(residualData[carea,],2,sum),qrsc=T);
-    }
-    outdir = which(apply(pdrate,1,ADstatWins.hy)>=ADcutoff)
-    pdrate[outdir,]=0
-
-    pdrate2 = sweep(pdrate,2,medvec.case01,"*")
-    # inner.std=function(x) {
-    #   m=mad(x)
-    #   if (m>1) {
-    #     return(x/m)
-    #   } else {
-    #     return(x)
-    #   }
-    # }
-    # pdrate3=apply(pdrate2,2,inner.std)
-    pdrate3=pdrate2
-    off_stat = apply(pdrate3,2,max)
-    where_on = apply(pdrate3,2,which.max)
-
-    for (j in 1:n2) {
-      start_loc = window_site[where_on[j]]
-      end_loc = start_loc + window_size[where_on[j]] - 1
-      carea = c(start_loc:end_loc)
-      tMOD[carea,j] = -1/sqrt(length(carea))
-      tNPS[,j] = pdrate3[where_on[j],]
-    }
-  } else {
-    off_stat = rep(0,ncol(residualData))
-  }
-
-  return(list(stat=off_stat,tMOD=tMOD,tNPS=tNPS))
-}
-
-
 #' Find which exon contains the position
 #'
 #' @export
@@ -436,7 +349,7 @@ build_crypticDir = function(Ranges,JSR.table) {
   ## abnormal junction basis (do not consider cryptic events)
   nexons = dim(Ranges$lRanges)[1]
   cryptic.idx = which(grepl(pattern="Cryptic",JSR.table[,which(colnames(JSR.table)=="JV.class")])==T)
-  crypJDir.names = rep("0",length(cryptic.idx))
+  crypJDir.names = as.character(JSR.table$JV.tag)[cryptic.idx]
   crypJDir.pos = rep("0",length(cryptic.idx))
 
   for (j in 1:length(cryptic.idx)) {
@@ -452,7 +365,6 @@ build_crypticDir = function(Ranges,JSR.table) {
       } else {
         crypJDir.pos[j] = collapse_junction(c(Ranges$lRanges[LBE[1],2] - LBE[2],Ranges$lRanges[LBE[1],2]))
       }
-      crypJDir.names[j] = as.character(JSR.i$JV.tag)
     } else {
       LBE = as.numeric(LBE.tab[,LBE.which])
       if (LBE[2]<0) {
@@ -460,7 +372,6 @@ build_crypticDir = function(Ranges,JSR.table) {
       } else {
         crypJDir.pos[j] = collapse_junction(c(Ranges$lRanges[LBE[1],3],Ranges$lRanges[LBE[1],3] + LBE[2]))
       }
-      crypJDir.names[j] = as.character(JSR.i$JV.tag)
     }
   }
 
@@ -477,8 +388,8 @@ build_crypticDir = function(Ranges,JSR.table) {
 #' Collect known directions
 #'
 #' @export
-build_knownDir = function(Ranges,JSR.table) {
-  plat.table = build_platTable(Ranges = Ranges,JSR.table = JSR.table)
+build_knownDir = function(plat.table,Ranges,JSR.table) {
+  # plat.table = build_platTable(Ranges = Ranges,JSR.table = JSR.table)
   nexons = dim(Ranges$lRanges)[1]
 
   ## Type 1. sparse plat basis only for exon & intron basis
@@ -567,12 +478,12 @@ build_knownDir = function(Ranges,JSR.table) {
 #' Collect ATT/ATS directions
 #'
 #' @export
-build_atDir = function(inputData,Ranges,JSR.table,cutoff) {
+build_atDir = function(plat.table,inputData,Ranges,JSR.table,cutoff) {
   ## inputData = normalized data
   nexons = dim(Ranges$lRanges)[1]
   # cutoff = sqrt(qchisq(p=(1-1e-04),df=11))
 
-  plat.table = build_platTable(Ranges = Ranges,JSR.table = JSR.table)
+  # plat.table = build_platTable(Ranges = Ranges,JSR.table = JSR.table)
   plat.baseMat = build_baseMat(plat.table)
   plat.sizeMat = sqrt(t(plat.baseMat)%*%plat.baseMat)
   normProjData = t(plat.baseMat) %*% inputData
@@ -776,32 +687,82 @@ get_POgivenB = function(X,B,qrsc=FALSE) {
 #' Get sum of robust Z-scores (A-D stat adjusted) from each dimension after removing the given direction
 #'
 #' @export
-get_resdZsum1d = function(X,direction,L1=FALSE,qrsc=FALSE) {
+get_resdZsum1d = function(X,direction,L1=FALSE,qrsc=TRUE) {
   resdX = X - direction%*%t(direction)%*%X
-  resdZ = t(apply(resdX,1,FUN=function(t){POrateADadj(t,qrsc=qrsc)}))
+  X.stats = apply(X,1,FUN=function(t){unlist(pd.stats(t,qrsc=qrsc))})
+  X.stats[3,which(grepl(pattern="I",rownames(X))==T)] = X.stats[2,which(grepl(pattern="I",rownames(X))==T)]
+  resdZsum = rep(0,ncol(X))
+  # sapply(resdX[1,],FUN=function(t) {compute.pd(x=t,stats=X.stats[,1])})
+
+  ADstat = apply(X,1,ADstatWins.hy)
+  ADw = sapply(ADstat,FUN=function(t){max(1-(t/100),0.1)})
   if (L1) {
-    return(apply(resdZ,2,FUN=function(t){sum(abs(t))}))
+    for (j in 1:nrow(resdX)) {
+      resdZsum = resdZsum + ADw[j]*abs(sapply(resdX[j,],FUN=function(t) {compute.pd(x=t,stats=X.stats[,j])}))
+    }
+    return(resdZsum)
   } else {
-    return(sqrt(apply(resdZ,2,FUN=function(t){sum(t^2)})))
+    for (j in 1:nrow(resdX)) {
+      resdZsum = resdZsum + (ADw[j]*sapply(resdX[j,],FUN=function(t) {compute.pd(x=t,stats=X.stats[,j])}))^2
+    }
+    return(sqrt(resdZsum))
   }
 }
+
+#' @export
+pd.stats = function(x,qrsc=TRUE) {
+  # projection depth
+  if (qrsc) {
+    outlier = which(abs((x-median(x))/mad(x))>qnorm(0.99))
+    x0 = x[which(! 1:length(x) %in% outlier)]
+    rsc=compScales(x0)
+    return(list(med=rsc$med,sa=rsc$sa,sb=rsc$sb))
+  } else {
+    return(list(med=median(x),sa=mad(x),sb=mad(x)))
+  }
+}
+
+#' @export
+compute.pd = function(x,stats) {
+  med = stats[1]
+  sa = stats[2]
+  sb = stats[3]
+  y = 0
+  if ((x>med) & (sa>1e-5)) {
+    y = (x-med)/sa
+  }
+  if ((x<med) & (sb>1e-5)) {
+    y = (x-med)/sb
+  }
+  return(y)
+}
+
+# get_resdZsum1d = function(X,direction,L1=FALSE,qrsc=FALSE) {
+#   resdX = X - direction%*%t(direction)%*%X
+#   resdZ = t(apply(resdX,1,FUN=function(t){POrateADadj(t,qrsc=qrsc)}))
+#   if (L1) {
+#     return(apply(resdZ,2,FUN=function(t){sum(abs(t))}))
+#   } else {
+#     return(sqrt(apply(resdZ,2,FUN=function(t){sum(t^2)})))
+#   }
+# }
 
 #' Get sum of robust Z-scores (A-D stat adjusted) from each dimension after removing the given direction
 #'
 #' @export
-get_resdZsum = function(X,B,L1=FALSE,qrsc=FALSE) {
+get_resdZsum = function(X,B,L1=FALSE,qrsc=TRUE) {
   # X = d by n data matrix
   # B = d by n direction matrix or d-dimensional vector
   # If L1 is true (default), the L1 norm will be used to compute the sum of outlyingness. Otherwise, L2 norm will be used.
-  get_resdZsum1d = function(X,direction,qrsc=FALSE) {
-    resdX = X - direction%*%t(direction)%*%X
-    resdZ = t(apply(resdX,1,FUN=function(t){POrateADadj(t,qrsc=qrsc)}))
-    if (L1) {
-      return(apply(resdZ,2,FUN=function(t){sum(abs(t))}))
-    } else {
-      return(sqrt(apply(resdZ,2,FUN=function(t){sum(t^2)})))
-    }
-  }
+  # get_resdZsum1d = function(X,direction,qrsc=FALSE) {
+  #   resdX = X - direction%*%t(direction)%*%X
+  #   resdZ = t(apply(resdX,1,FUN=function(t){POrateADadj(t,qrsc=qrsc)}))
+  #   if (L1) {
+  #     return(apply(resdZ,2,FUN=function(t){sum(abs(t))}))
+  #   } else {
+  #     return(sqrt(apply(resdZ,2,FUN=function(t){sum(t^2)})))
+  #   }
+  # }
   if (is.null(dim(B))) {
     return(get_resdZsum1d(X=X,direction=get_unitdir(B),qrsc=qrsc))
   } else {
