@@ -11,6 +11,8 @@ get_SpliceRatio = function(Ranges,JSR.table,JSR.matrix) {
 
   ## Exon splice ratio
   exon.splice.ratio=matrix(0,ncol=ncol(JSR.matrix),nrow=nrow(JSR.matrix))
+  rownames(exon.splice.ratio) = as.character(JSR.table$LBE.position)
+  colnames(exon.splice.ratio) = colnames(JSR.matrix)
   for (i in 1:length(junction.start)) {
     index.temp=which(junctions.g[,1]==junction.start[i])
     junction.sum = apply(matrix(JSR.matrix[index.temp,],ncol=n),2,sum);
@@ -30,7 +32,6 @@ get_SpliceRatio = function(Ranges,JSR.table,JSR.matrix) {
       }
     }
   }
-  colnames(exon.splice.ratio) = colnames(JSR.matrix)
 
   ## Intron splice ratio
   intron.splice.ratio=matrix(0,ncol=ncol(JSR.matrix),nrow=2*(nexons-1))
