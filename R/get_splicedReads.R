@@ -12,19 +12,19 @@ get_SRcount = function(BAMfiles,caseIDs=NULL,regions=NULL,print.proc=FALSE) {
   }
 
   Ranges = get_Ranges(regions=regions)
-  gene.range = paste(Ranges$chr,paste((min(Ranges$gRanges)-100),(max(Ranges$gRanges)+100),sep="-"),Ranges$strand,sep=":")
+  gene.locus = paste(Ranges$chr,paste((min(Ranges$gRanges)-100),(max(Ranges$gRanges)+100),sep="-"),Ranges$strand,sep=":")
 
   splicedReads.count=rep(0,length(caseIDs))
   if (print.proc) {
     for (sj in 1:length(caseIDs)) {
-      bam.jsr = extract_splicedReads(BAM=BAMfiles[sj],gene.range=gene.range)
+      bam.jsr = extract_splicedReads(BAM=BAMfiles[sj],gene.locus=gene.locus)
       splicedReads.count[sj] = count_splicedReads(splicedReads=bam.jsr,regions=regions)
       cat(paste0(sj,"|",caseIDs[sj]),"\n")
       rm(bam.jsr)
     }
   } else {
     for (sj in 1:length(caseIDs)) {
-      bam.jsr = extract_splicedReads(BAM=BAMfiles[sj],gene.range=gene.range)
+      bam.jsr = extract_splicedReads(BAM=BAMfiles[sj],gene.locus=gene.locus)
       splicedReads.count[sj] = count_splicedReads(splicedReads=bam.jsr,regions=regions)
       rm(bam.jsr)
     }
@@ -38,18 +38,18 @@ get_SRcount = function(BAMfiles,caseIDs=NULL,regions=NULL,print.proc=FALSE) {
 #                       header=F,colClasses="character")
 # bamfiles = manifest[,2]
 # BAM = bamfiles[1]
-# gene.range = "chr4:187508000-187650000:-"
-# bam.jsr = extract_splicedReads(BAM=BAM,gene.range=gene.range)
+# gene.locus = "chr4:187508000-187650000:-"
+# bam.jsr = extract_splicedReads(BAM=BAM,gene.locus=gene.locus)
 # p0 = c("qname","flag","rname","pos","mapq","cigar","mrnm","mpos","isize","seq")
 # p1 = c("qname","flag","rname","pos","mapq","cigar")
 #' @export
-extract_splicedReads = function(BAM,gene.range,p1=c("qname","flag","rname","pos","mapq","cigar")) {
+extract_splicedReads = function(BAM,gene.locus,p1=c("qname","flag","rname","pos","mapq","cigar")) {
   require(Rsamtools)
 
   bf = BamFile(BAM)
-  chr = strsplit(gene.range,":")[[1]][1]
-  strtend = do.call(rbind,strsplit(strsplit(strsplit(gene.range,":")[[1]][2],",")[[1]],"-"))
-  strnd = strsplit(gene.range,":")[[1]][3]
+  chr = strsplit(gene.locus,":")[[1]][1]
+  strtend = do.call(rbind,strsplit(strsplit(strsplit(gene.locus,":")[[1]][2],",")[[1]],"-"))
+  strnd = strsplit(gene.locus,":")[[1]][3]
   df = GRanges(chr,IRanges(start=as.numeric(strtend[,1]), end=as.numeric(strtend[,2])),strnd)
   s_param = ScanBamParam(which=df, what=p1)
 
