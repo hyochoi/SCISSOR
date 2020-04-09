@@ -30,7 +30,7 @@ get_SRcount = function(BAMfiles,caseIDs=NULL,regions=NULL,print.proc=FALSE) {
     }
   }
   splicedReads.count = data.frame(caseIDs=caseIDs,junction.count=splicedReads.count)
-  return(splicedReads.counts)
+  return(splicedReads.count)
 }
 
 ## example
@@ -68,13 +68,15 @@ count_splicedReads=function(splicedReads,regions) {
 
   inner_fn=function(rinfo) {
     rpos = as.numeric(as.character(rinfo[1]))
-    rcigar = as.numeric(unlist(str_split(as.character(rinfo[2]),"[M,N]")))
+    rcigar = unlist(str_split(as.character(rinfo[2]),"[M,N]"))
     if (length(rcigar)==4) {
+      rcigar = as.numeric(rcigar)
       y=c((rpos+rcigar[1]-1),
           rcigar[1:3],
           (rpos+rcigar[1]+rcigar[2]))
       # y = c(j1.pos,j1.len,split.len,j2.len,j2.pos)
     } else if (length(rcigar)==6) {
+      rcigar = as.numeric(rcigar)
       y1=c((rpos+rcigar[1]-1),
            rcigar[1:3],
            (rpos+rcigar[1]+rcigar[2]))
@@ -82,10 +84,14 @@ count_splicedReads=function(splicedReads,regions) {
            rcigar[3:5],
            (rpos+sum(rcigar[1:4])))
       y=t(rbind(y1,y2))
+    } else {
+      y=rep(NA,5)
     }
     return(y)
   }
-  temp_out=apply(subset(splicedReads, select=c(pos,cigar)),1,inner_fn)
+  splicedReads2 = cbind(as.character(splicedReads$pos),as.character(splicedReads$cigar))
+  # temp_out=apply(subset(splicedReads, select=c(pos,cigar)),1,inner_fn)
+  temp_out=apply(splicedReads2,1,inner_fn)
   splice.info = matrix(unlist(temp_out),ncol=5,byrow=T)
 
   # Get unique splicing locations

@@ -14,7 +14,7 @@
 #' @examples
 #' package_path = "~/Dropbox/Research/hyochoi_GitHub/"
 #' regions = "chrQ:7571719-7572198,7574858-7575157,7598088-7598437:-"
-#' countPileup = read_pileup(pileupfile=paste0(package_path,"SCISSOR/toydata/TOY_coverage.txt"),inputType="whole_intron",caseIDs=NULL,regions=regions)
+#' countPileup = build_pileup(Pileup=paste0(package_path,"SCISSOR/toydata/TOY_coverage.txt"),inputType="whole_intron",caseIDs=NULL,regions=regions)
 #'
 #' @import BiocManager Rsamtools
 #' @export
