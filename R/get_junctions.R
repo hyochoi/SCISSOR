@@ -9,11 +9,10 @@ get_junctions = function(jsrCount,Ranges) {
   lRanges = Ranges$lRanges
   jsrCount2 = jsrCount[,1]
   caseIDs = rownames(jsrCount)
-  n = length(jsrCount2)
+  n = length(caseIDs)
   jsrsite0=c()
   for (i in 1:n) {
-    x=jsrCount2[i]
-    x.split=unlist(str_split(x,","))
+    x.split=unlist(str_split(jsrCount2[i],","))
     jsrsite0=unique(c(jsrsite0,unlist(str_split(x.split,":"))[seq(1,(2*length(x.split)),by=2)]))
     # cat(paste(i,"|",length(x.split)),"\n")
   }
@@ -37,8 +36,8 @@ get_junctions = function(jsrCount,Ranges) {
   temp = split_junction(jsrsite0)
   rmj = which((temp[1,]=="NA") | (temp[2,]=="NA"))
   rmj = c(rmj,which((apply(temp,2,max)<min(Ranges$gRanges)) | (apply(temp,2,min)>max(Ranges$gRanges))))
-  jsrsite0 = jsrsite0[-rmj]
-  jsrmat0 = jsrmat0[-rmj,]
+  jsrsite0 = jsrsite0[which(! 1:length(jsrsite0) %in% rmj)]
+  jsrmat0 = jsrmat0[which(! 1:length(jsrsite0) %in% rmj),]
   # cat(paste("# of different splicing =",length(jsrsite0)),"\n")
 
   ## Junction Filtering
