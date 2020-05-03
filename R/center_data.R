@@ -12,11 +12,17 @@ center_data = function(inputData, Ranges, average="mean",trim=0.1,adjval=NULL, .
 
   exonbaseMat = matrix(0,ncol=nexons,nrow=d)
   colnames(exonbaseMat) = rownames(Ranges$lRanges)
+  zeromean = c()
   for (ie in 1:nexons) {
-    exonbaseMat[Ranges$lRanges[ie,2]:Ranges$lRanges[ie,3],ie] = mean.vec[Ranges$lRanges[ie,2]:Ranges$lRanges[ie,3]]/sum(mean.vec[Ranges$lRanges[ie,2]:Ranges$lRanges[ie,3]]^2)
+    x = mean.vec[Ranges$lRanges[ie,2]:Ranges$lRanges[ie,3]]
+    if (sum(x^2)>1e-05) {
+      exonbaseMat[Ranges$lRanges[ie,2]:Ranges$lRanges[ie,3],ie] = x/sum(x^2)
+    } else {
+      zeromean = c(zeromean,ie)
+    }
   }
   msf.exons = t(exonbaseMat)%*%inputData
-  msf = apply(msf.exons,2,median)
+  msf = apply(msf.exons[which(! c(1:nrow(msf.exons)) %in% zeromean),],2,median)
 
   NewX = inputData - mean.vec%*%t(msf)
   # msf2=rep(1,length(msf))
