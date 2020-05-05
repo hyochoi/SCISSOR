@@ -28,7 +28,12 @@ get_PO = function(X,siglev=1e-4,NormCutoff=3,canDir=NULL,numSearch=300,qrsc=FALS
       z.pca = pca.hy(X)
       Scov = (X%*%t(X))/n
       p = length(which(z.pca$eigenval>1e-13))
-      if (p==1) {
+      if (p==0) {
+        OS = rep(0,n)
+        OSpval = rep(1,n)
+        cutoff = 0
+        NPS = directions = NULL
+      } else if (p==1) {
         X = as.vector(z.pca$projmat[1,])
         ADstat = ADstatWins.hy(X);
         if (ADstat < NormCutoff) {
