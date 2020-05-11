@@ -16,7 +16,9 @@ get_junctions = function(jsrCount,Ranges) {
   jsrsite0 = jsrsite0[which(! grepl("NA",jsrsite0))] # remove NAs
   jsrsite0 = jsrsite0[which(! jsrsite0=="~")]
   jsrsite0 = jsrsite0[order(as.numeric(split_junction(jsrsite0)[1,]))]
-
+  if (Ranges$strand=="-") {
+    jsrsite0 = rev(jsrsite0)
+  }
   jsrcountlist = sapply(jsrCount2, function(x) sapply(unlist(strsplit(x,",")),function(y) unlist(strsplit(y,":"))))
   extract_count = function(y,j) {
     if (length(which(y[1,]==j))>0) {
