@@ -10,34 +10,26 @@ get_junctions = function(jsrCount,Ranges) {
   jsrCount2 = jsrCount[,1]
   caseIDs = rownames(jsrCount)
   n = length(caseIDs)
-  jsrsite0=c()
-  for (i in 1:n) {
-    x.split=unlist(str_split(jsrCount2[i],","))
-    jsrsite0=unique(c(jsrsite0,unlist(str_split(x.split,":"))[seq(1,(2*length(x.split)),by=2)]))
-    # cat(paste(i,"|",length(x.split)),"\n")
-  }
-  jsrsite0=sort(jsrsite0,decreasing=T)
-  # length(jsrsite0)
 
-  jsrmat0=matrix(0,ncol=n,nrow=length(jsrsite0))
-  for (i in 1:n) {
-    x=jsrCount2[i]
-    x.split=unlist(str_split(x,","))
-    x.splicing.site=unlist(str_split(x.split,":"))[seq(1,(2*length(x.split)),by=2)]
-    x.splicing.counts=unlist(str_split(x.split,":"))[seq(2,(2*length(x.split)),by=2)]
-    x.index=apply(matrix(x.splicing.site,ncol=1),1,FUN=function(x){which(jsrsite0==x)})
-    jsrmat0[x.index,i]=as.numeric(x.splicing.counts)
-  }
-  rownames(jsrmat0)=jsrsite0
-  colnames(jsrmat0)=caseIDs
+  jsrlist = sapply(jsrCount2,function(x) sapply(unlist(strsplit(x,",")),function(y) unlist(strsplit(y,":"))[1]))
+  jsrsite0 = unique(unlist(jsrlist))
+  jsrsite0 = jsrsite0[which(! grepl("NA",jsrsite0))] # remove NAs
+  jsrsite0 = jsrsite0[which(! jsrsite0=="~")]
+  jsrsite0 = jsrsite0[order(as.numeric(split_junction(jsrsite0)[1,]))]
 
-  # Remove NA-NA row / Remove reads from outside to outside of the gene
-  # head(jsrsite0)
-  temp = split_junction(jsrsite0)
-  rmj = which((temp[1,]=="NA") | (temp[2,]=="NA"))
-  rmj = c(rmj,which((apply(temp,2,max)<min(Ranges$gRanges)) | (apply(temp,2,min)>max(Ranges$gRanges))))
-  jsrsite0 = jsrsite0[which(! 1:length(jsrsite0) %in% rmj)]
-  jsrmat0 = jsrmat0[which(! 1:length(jsrsite0) %in% rmj),]
+  jsrcountlist = sapply(jsrCount2, function(x) sapply(unlist(strsplit(x,",")),function(y) unlist(strsplit(y,":"))))
+  extract_count = function(y,j) {
+    if (length(which(y[1,]==j))>0) {
+      s = as.numeric(y[2,which(y[1,]==j)])
+    } else {
+      s = 0
+    }
+  }
+  jsrmat0 = sapply(jsrcountlist,function(y) sapply(jsrsite0,function(j) extract_count(y,j)))
+  rownames(jsrmat0) = sapply(rownames(jsrmat0),function(x) unlist(strsplit(x,"[.]"))[1])
+  jsrmat0 = jsrmat0[match(jsrsite0,rownames(jsrmat0)),]
+  rownames(jsrmat0) = jsrsite0
+  colnames(jsrmat0) = caseIDs
   # cat(paste("# of different splicing =",length(jsrsite0)),"\n")
 
   ## Junction Filtering
@@ -45,32 +37,54 @@ get_junctions = function(jsrCount,Ranges) {
   mincount = 5 # minimum splice junctions required
   jsrsite = jsrsite0[which(apply(jsrmat0,1,max)>mincount)]
   jsrmat = jsrmat0[which(apply(jsrmat0,1,max)>mincount),]
+  if (is.null(dim(jsrmat))) {
+    jsrmat = matrix(jsrmat,nrow=1)
+    colnames(jsrmat) = colnames(jsrmat0)
+    rownames(jsrmat) = jsrsite
+  }
   # cat(paste("# of junctions considered =",dim(jsrmat)[1]),"\n")
 
   ## 2. overlap with gene models
-  junctions.g.name=jsrsite
-  junctions.g=matrix(as.numeric(split_junction(junctions.g.name)),ncol=2,byrow=T)
+  if (dim(jsrmat)[1]==0) {
+    junctions.g.name=jsrsite
+    junctions.g=matrix(as.numeric(split_junction(junctions.g.name)),ncol=2,byrow=T)
 
-  junctions.l = cbind(apply(matrix(junctions.g[,1],1),1,FUN=function(x){find_region(gpos=x,Ranges=Ranges)}),apply(matrix(junctions.g[,2],1),1,FUN=function(x){find_region(gpos=x,Ranges=Ranges)}))
-  junctions.l.name = collapse_junction(junctions.l)
+    junctions.l = junctions.g
+    junctions.l.name = junctions.g.name
 
-  trow = dim(junctions.l)[1]
-  rows2exclude = which((junctions.l[,1]<1) & (junctions.l[,2]>max(lRanges)))
+    jsrmat.g = jsrmat
+    junction.tags = as.character(NULL)
+    junction.names = as.character(NULL)
+  } else {
+    junctions.g.name=jsrsite
+    junctions.g=matrix(as.numeric(split_junction(junctions.g.name)),ncol=2,byrow=T)
 
-  ## Final
-  junctions.g = junctions.g[which(! c(1:trow) %in% rows2exclude),]
-  junctions.g.name = junctions.g.name[which(! c(1:trow) %in% rows2exclude)]
-  junctions.l = junctions.l[which(! c(1:trow) %in% rows2exclude),]
-  junctions.l.name = junctions.l.name[which(! c(1:trow) %in% rows2exclude)]
+    junctions.l = cbind(apply(matrix(junctions.g[,1],1),1,FUN=function(x){find_region(gpos=x,Ranges=Ranges)}),apply(matrix(junctions.g[,2],1),1,FUN=function(x){find_region(gpos=x,Ranges=Ranges)}))
+    junctions.l.name = collapse_junction(junctions.l)
 
-  jsrmat.g = jsrmat[which(! c(1:trow) %in% rows2exclude),]
-  junction.names = paste(GeneName,"junction",1:nrow(jsrmat.g),sep="_")
-  junction.tags = paste("J",1:nrow(jsrmat.g),sep="")
-  rownames(jsrmat.g) = junction.names
-  # jsrmat.l = jsrmat.g
-  # rownames(jsrmat.l) = junctions.l.name
-  # cat(paste("# of junctions considered (final) =",dim(jsrmat.g)[1]),"\n")
-  # head(jsrmat.l[,1:10])
+    trow = dim(junctions.l)[1]
+    rows2exclude = which((junctions.l[,1]<1) & (junctions.l[,2]>max(lRanges)))
+
+    ## Final
+    junctions.g = junctions.g[which(! c(1:trow) %in% rows2exclude),]
+    junctions.g.name = junctions.g.name[which(! c(1:trow) %in% rows2exclude)]
+    junctions.l = junctions.l[which(! c(1:trow) %in% rows2exclude),]
+    junctions.l.name = junctions.l.name[which(! c(1:trow) %in% rows2exclude)]
+
+    jsrmat.g = jsrmat[which(! c(1:trow) %in% rows2exclude),]
+    if (is.null(dim(jsrmat.g))) {
+      jsrmat.g = matrix(jsrmat.g,nrow=1)
+      rownames(jsrmat.g) = junctions.g.name
+      colnames(jsrmat.g) = colnames(jsrmat)
+    }
+    junction.names = paste(GeneName,"junction",1:nrow(jsrmat.g),sep="_")
+    junction.tags = paste("J",1:nrow(jsrmat.g),sep="")
+    rownames(jsrmat.g) = junction.names
+    # jsrmat.l = jsrmat.g
+    # rownames(jsrmat.l) = junctions.l.name
+    # cat(paste("# of junctions considered (final) =",dim(jsrmat.g)[1]),"\n")
+    # head(jsrmat.l[,1:10])
+  }
 
   ## Annotation
   LBE.position = annotate_junction(x=junctions.l,lRanges)
@@ -85,6 +99,120 @@ get_junctions = function(jsrCount,Ranges) {
   return(list(JSR.annotation=data.frame(JSR.annotation),
               JSRmat=jsrmat.g))
 }
+
+# get_junctions = function(jsrCount,Ranges) {
+#   ## jsrCount = n by 1 matrix with junction-split read counts
+#   ## each row for each sample
+#   require(stringr)
+#   require(zoo)
+#
+#   lRanges = Ranges$lRanges
+#   jsrCount2 = jsrCount[,1]
+#   caseIDs = rownames(jsrCount)
+#   n = length(caseIDs)
+#   jsrsite0=c()
+#   for (i in 1:n) {
+#     x.split=unlist(str_split(jsrCount2[i],","))
+#     jsrsite0=unique(c(jsrsite0,unlist(str_split(x.split,":"))[seq(1,(2*length(x.split)),by=2)]))
+#     # cat(paste(i,"|",length(x.split)),"\n")
+#   }
+#   jsrsite0=sort(jsrsite0,decreasing=T)
+#   # length(jsrsite0)
+#
+#   jsrmat0=matrix(0,ncol=n,nrow=length(jsrsite0))
+#   for (i in 1:n) {
+#     x=jsrCount2[i]
+#     x.split=unlist(str_split(x,","))
+#     x.splicing.site=unlist(str_split(x.split,":"))[seq(1,(2*length(x.split)),by=2)]
+#     x.splicing.counts=unlist(str_split(x.split,":"))[seq(2,(2*length(x.split)),by=2)]
+#     x.index=apply(matrix(x.splicing.site,ncol=1),1,FUN=function(x){which(jsrsite0==x)})
+#     jsrmat0[x.index,i]=as.numeric(x.splicing.counts)
+#   }
+#   rownames(jsrmat0)=jsrsite0
+#   colnames(jsrmat0)=caseIDs
+#
+#   # Remove NA-NA row / Remove reads from outside to outside of the gene
+#   # head(jsrsite0)
+#   temp = split_junction(jsrsite0)
+#   if (class(temp)=="list") {
+#     # remove no split-reads case.
+#     if (length(which(names(temp)=="~"))>0) {
+#       temp = split_junction(jsrsite0[-which(names(temp)=="~")])
+#     }
+#   }
+#   rmj = which((temp[1,]=="NA") | (temp[2,]=="NA"))
+#   rmj = c(rmj,which((apply(temp,2,max)<min(Ranges$gRanges)) | (apply(temp,2,min)>max(Ranges$gRanges))))
+#   jsrsite0 = jsrsite0[which(! 1:length(jsrsite0) %in% rmj)]
+#   jsrmat0 = jsrmat0[which(! 1:length(jsrsite0) %in% rmj),]
+#   # cat(paste("# of different splicing =",length(jsrsite0)),"\n")
+#
+#   ## Junction Filtering
+#   ## 1. at least one sample has >= 10 reads
+#   mincount = 5 # minimum splice junctions required
+#   jsrsite = jsrsite0[which(apply(jsrmat0,1,max)>mincount)]
+#   jsrmat = jsrmat0[which(apply(jsrmat0,1,max)>mincount),]
+#   if (is.null(dim(jsrmat))) {
+#     jsrmat = matrix(jsrmat,nrow=1)
+#     colnames(jsrmat) = colnames(jsrmat0)
+#     rownames(jsrmat) = jsrsite
+#   }
+#   # cat(paste("# of junctions considered =",dim(jsrmat)[1]),"\n")
+#
+#   ## 2. overlap with gene models
+#   if (dim(jsrmat)[1]==0) {
+#     junctions.g.name=jsrsite
+#     junctions.g=matrix(as.numeric(split_junction(junctions.g.name)),ncol=2,byrow=T)
+#
+#     junctions.l = junctions.g
+#     junctions.l.name = junctions.g.name
+#
+#     jsrmat.g = jsrmat
+#     junction.tags = as.character(NULL)
+#     junction.names = as.character(NULL)
+#   } else {
+#     junctions.g.name=jsrsite
+#     junctions.g=matrix(as.numeric(split_junction(junctions.g.name)),ncol=2,byrow=T)
+#
+#     junctions.l = cbind(apply(matrix(junctions.g[,1],1),1,FUN=function(x){find_region(gpos=x,Ranges=Ranges)}),apply(matrix(junctions.g[,2],1),1,FUN=function(x){find_region(gpos=x,Ranges=Ranges)}))
+#     junctions.l.name = collapse_junction(junctions.l)
+#
+#     trow = dim(junctions.l)[1]
+#     rows2exclude = which((junctions.l[,1]<1) & (junctions.l[,2]>max(lRanges)))
+#
+#     ## Final
+#     junctions.g = junctions.g[which(! c(1:trow) %in% rows2exclude),]
+#     junctions.g.name = junctions.g.name[which(! c(1:trow) %in% rows2exclude)]
+#     junctions.l = junctions.l[which(! c(1:trow) %in% rows2exclude),]
+#     junctions.l.name = junctions.l.name[which(! c(1:trow) %in% rows2exclude)]
+#
+#     jsrmat.g = jsrmat[which(! c(1:trow) %in% rows2exclude),]
+#     if (is.null(dim(jsrmat.g))) {
+#       jsrmat.g = matrix(jsrmat.g,nrow=1)
+#       rownames(jsrmat.g) = junctions.g.name
+#       colnames(jsrmat.g) = colnames(jsrmat)
+#     }
+#     junction.names = paste(GeneName,"junction",1:nrow(jsrmat.g),sep="_")
+#     junction.tags = paste("J",1:nrow(jsrmat.g),sep="")
+#     rownames(jsrmat.g) = junction.names
+#     # jsrmat.l = jsrmat.g
+#     # rownames(jsrmat.l) = junctions.l.name
+#     # cat(paste("# of junctions considered (final) =",dim(jsrmat.g)[1]),"\n")
+#     # head(jsrmat.l[,1:10])
+#   }
+#
+#   ## Annotation
+#   LBE.position = annotate_junction(x=junctions.l,lRanges)
+#   Region.tags = get_Tag(LBE.position)
+#
+#   ## Junction classes
+#   JV.class = get_JVclass(LBE.position)
+#   JSR.annotation = cbind(junctions.g.name,junctions.l.name,LBE.position,JV.class,junction.tags,Region.tags)
+#   rownames(JSR.annotation) = junction.names
+#   colnames(JSR.annotation) = c("junctions.g","junctions.l","LBE.position","JV.class","JV.tag","Region.tag")
+#
+#   return(list(JSR.annotation=data.frame(JSR.annotation),
+#               JSRmat=jsrmat.g))
+# }
 
 #'
 #' @export
