@@ -41,13 +41,13 @@ build_gaf = function(Gene,GTF.file=NULL,hg.ref=c("hg19","hg38")) {
   #   exons = paste(exondata$seqnames[1],paste(paste(exondata$start,exondata$end,sep="-"),collapse=","),
   #                 exondata$strand[1],sep=":")
   } else {
-    require(refGenome)
-    require(GenomicRanges)
-
-    ens = ensemblGenome()
-    # GTF
-    read.gtf(ens,GTF.file, useBasedir=FALSE) ## read.gtf does not accept gtf.gz: gunzip it.
-    tmp = getGtf(extractByGeneName(ens,Gene))
+    # require(refGenome)
+    # require(GenomicRanges)
+    #
+    # ens = ensemblGenome()
+    # # GTF
+    # read.gtf(ens,GTF.file, useBasedir=FALSE) ## read.gtf does not accept gtf.gz: gunzip it.
+    # tmp = getGtf(extractByGeneName(ens,Gene))
     # tmp = getGtf(extractByGeneId(ens,geneid$GENEID))
     tmp.bed = tmp[tmp$feature=="exon",c("seqid","start","end","strand")]
     exondata = data.frame(reduce(GRanges(tmp.bed)))
