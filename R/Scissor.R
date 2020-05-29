@@ -23,8 +23,8 @@ Scissor = function(pileupData, Ranges,
   ##          Pre-process pileup
   ##---------------------------------------
   data.process = process_pileup(pileupData=pileupData,Ranges=Ranges,
-                              logshiftVal=logshiftVal,
-                              plotNormalization=plotNormalization)
+                                logshiftVal=logshiftVal,
+                                plotNormalization=plotNormalization)
 
   logshiftVal = data.process$logshiftVal  # log shift parameter
   cat(paste0("     Log shift parameter used  = ",logshiftVal),"\n")
@@ -42,9 +42,9 @@ Scissor = function(pileupData, Ranges,
 
   ## Step 2: Local shape change detection
   LSCout = miscLocal(miscGlobalResult=GSCout,
-                       pileupData=pileupData,Ranges=Ranges,
-                       siglev=siglev,cutoff=NULL,ADcutoff=3,
-                       windowSize=windowSize,reducedReturn=reducedReturn)
+                     pileupData=pileupData,Ranges=Ranges,
+                     siglev=siglev,cutoff=NULL,ADcutoff=3,
+                     windowSize=windowSize,reducedReturn=reducedReturn)
   cat(paste0("     # Local Shape Changes identified   = ",length(LSCout$SC)),"\n")
 
   outputObject = list(SC=c(GSCout$SC,LSCout$SC), globalSC=GSCout$SC, localSC=LSCout$SC,

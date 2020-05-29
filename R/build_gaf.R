@@ -23,7 +23,7 @@ build_gaf = function(Gene,GTF.file=NULL,hg.ref=c("hg19","hg38")) {
   }
 
   if (is.null(GTF.file)) {
-    exons=c()
+  #   exons=c()
   #   require(org.Hs.eg.db)
   #   hg.ref = match.arg(hg.ref, choices=c("hg19","hg38"))
   #
