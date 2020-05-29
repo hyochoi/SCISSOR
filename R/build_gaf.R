@@ -11,7 +11,7 @@
 #' @examples
 #' build_gaf(Gene="TP53")
 #'
-#' @import BiocManager GenomicRanges refGenome
+#' @import BiocManager GenomicRanges
 #' @export
 build_gaf = function(Gene,GTF.file=NULL,hg.ref=c("hg19","hg38")) {
   if (missing(Gene)) {
