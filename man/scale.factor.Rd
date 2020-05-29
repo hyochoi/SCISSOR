@@ -4,8 +4,7 @@
 \alias{scale.factor}
 \title{Obtain robust mean scale factors}
 \usage{
-\method{scale}{factor}(X, average = "mean", trim = 0.1,
-  adjval = NULL, robustLM = FALSE)
+\method{scale}{factor}(X, average = "mean", trim = 0.1, adjval = NULL, robustLM = FALSE)
 }
 \arguments{
 \item{X}{an input data matrix}

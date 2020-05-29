@@ -4,9 +4,16 @@
 \alias{miscLocal}
 \title{Detect local shape changes}
 \usage{
-miscLocal(miscGlobalResult, pileupData, Ranges, siglev = 1e-04,
-  cutoff = NULL, ADcutoff = 3, windowSize = 100,
-  reducedReturn = TRUE)
+miscLocal(
+  miscGlobalResult,
+  pileupData,
+  Ranges,
+  siglev = 1e-04,
+  cutoff = NULL,
+  ADcutoff = 3,
+  windowSize = 100,
+  reducedReturn = TRUE
+)
 }
 \arguments{
 \item{miscGlobalResult}{Result from \link{miscGlobal}}

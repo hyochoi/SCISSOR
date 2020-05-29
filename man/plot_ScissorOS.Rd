@@ -4,8 +4,7 @@
 \alias{plot_ScissorOS}
 \title{Plot outlyingness scores with a kernel density estimate}
 \usage{
-plot_ScissorOS(object, GSC = TRUE, LSC = TRUE, colmat = NULL,
-  textSC = TRUE)
+plot_ScissorOS(object, GSC = TRUE, LSC = TRUE, colmat = NULL, textSC = TRUE)
 }
 \arguments{
 \item{object}{For the classes of GSCOutput and LSCOutput, the arguments GSC

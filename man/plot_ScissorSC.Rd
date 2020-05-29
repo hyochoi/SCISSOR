@@ -4,8 +4,16 @@
 \alias{plot_ScissorSC}
 \title{Plot shape changes from SCISSOR}
 \usage{
-plot_ScissorSC(object, Data, SCids = NULL, GSC = TRUE, LSC = TRUE,
-  subject.name = NULL, minfo = NULL, colmat = NULL)
+plot_ScissorSC(
+  object,
+  Data,
+  SCids = NULL,
+  GSC = TRUE,
+  LSC = TRUE,
+  subject.name = NULL,
+  minfo = NULL,
+  colmat = NULL
+)
 }
 \description{
 Plot shape changes from SCISSOR

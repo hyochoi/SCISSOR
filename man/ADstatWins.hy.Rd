@@ -4,7 +4,7 @@
 \alias{ADstatWins.hy}
 \title{Provide the winsorized Anderson-Darling test statistic}
 \usage{
-ADstatWins.hy(x)
+ADstatWins.hy(x, trim = NULL)
 }
 \arguments{
 \item{x}{an input vector}

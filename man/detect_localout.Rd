@@ -4,9 +4,16 @@
 \alias{detect_localout}
 \title{Detect local shape outliers with a residual matrix}
 \usage{
-detect_localout(residualData, pileupData, exonset, siglev = NULL,
-  cutoff = NULL, ADcutoff = 3, windowSize = 100,
-  reducedReturn = FALSE)
+detect_localout(
+  residualData,
+  pileupData,
+  exonset,
+  siglev = NULL,
+  cutoff = NULL,
+  ADcutoff = 3,
+  windowSize = 100,
+  reducedReturn = FALSE
+)
 }
 \description{
 This function identifies local shape variants by mining locally on/off abnormalities.

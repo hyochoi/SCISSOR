@@ -4,8 +4,14 @@
 \alias{miscGlobal}
 \title{Detect global shape variants in RNA-seq inputData}
 \usage{
-miscGlobal(inputData, siglev = 1e-04, ADcutoff = 3, PCnum = NULL,
-  maxPCnum = 10, reducedReturn = TRUE)
+miscGlobal(
+  inputData,
+  siglev = 1e-04,
+  ADcutoff = 3,
+  PCnum = NULL,
+  maxPCnum = 10,
+  reducedReturn = TRUE
+)
 }
 \arguments{
 \item{inputData}{precessed RNA-seq data from \link{process_data}}

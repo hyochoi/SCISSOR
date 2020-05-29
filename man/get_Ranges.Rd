@@ -4,8 +4,13 @@
 \alias{get_Ranges}
 \title{Genomic ranges and locus ranges}
 \usage{
-get_Ranges(Gene = NULL, regions = NULL, GTF.file = NULL,
-  hg.ref = c("hg19", "hg38"), outputType = "part_intron")
+get_Ranges(
+  Gene = NULL,
+  regions = NULL,
+  GTF.file = NULL,
+  hg.ref = c("hg19", "hg38"),
+  outputType = "part_intron"
+)
 }
 \arguments{
 \item{Gene}{character(1) identifying the gene symbol, e.g. \code{"TP53"}}

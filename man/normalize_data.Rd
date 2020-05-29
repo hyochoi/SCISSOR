@@ -4,8 +4,14 @@
 \alias{normalize_data}
 \title{Normalizing log data}
 \usage{
-normalize_data(inputData, pileupData, Ranges, smoothness = 0.7,
-  makePlot = FALSE, ...)
+normalize_data(
+  inputData,
+  pileupData,
+  Ranges,
+  smoothness = 0.7,
+  makePlot = FALSE,
+  ...
+)
 }
 \arguments{
 \item{inputData}{log-transformed data matrix (e.g. object from \link{logtransform_data})}

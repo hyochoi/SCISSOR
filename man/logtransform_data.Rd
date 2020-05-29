@@ -4,8 +4,12 @@
 \alias{logtransform_data}
 \title{Transforming data}
 \usage{
-logtransform_data(inputData, logshiftVal = NULL, param.grid = NULL,
-  draw.plot = FALSE)
+logtransform_data(
+  inputData,
+  logshiftVal = NULL,
+  param.grid = NULL,
+  draw.plot = FALSE
+)
 }
 \arguments{
 \item{inputData}{data to be transformed}

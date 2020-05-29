@@ -4,8 +4,13 @@
 \alias{build_pileup}
 \title{Build coverage pileup based on annotations}
 \usage{
-build_pileup(Pileup, caseIDs = NULL, regions,
-  inputType = "part_intron", outputType = "part_intron")
+build_pileup(
+  Pileup,
+  caseIDs = NULL,
+  regions,
+  inputType = "part_intron",
+  outputType = "part_intron"
+)
 }
 \arguments{
 \item{regions}{genomic regions formatted as chr1:1-100,200-300:+"}
@@ -24,6 +29,6 @@ purpose of the downstream outlier detection analysis.
 \examples{
 package_path = "~/Dropbox/Research/hyochoi_GitHub/"
 regions = "chrQ:7571719-7572198,7574858-7575157,7598088-7598437:-"
-countPileup = read_pileup(pileupfile=paste0(package_path,"SCISSOR/toydata/TOY_coverage.txt"),inputType="whole_intron",caseIDs=NULL,regions=regions)
+countPileup = build_pileup(Pileup=paste0(package_path,"SCISSOR/toydata/TOY_coverage.txt"),inputType="whole_intron",caseIDs=NULL,regions=regions)
 
 }

@@ -4,8 +4,14 @@
 \alias{center_data}
 \title{Centering data}
 \usage{
-center_data(inputData, Ranges, average = "mean", trim = 0.1,
-  adjval = NULL, ...)
+center_data(
+  inputData,
+  Ranges,
+  average = "mean",
+  trim = 0.1,
+  adjval = NULL,
+  ...
+)
 }
 \description{
 This function finds a robust mean vector along the gene length using a trimmed mean. Also, it provides

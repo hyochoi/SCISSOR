@@ -4,10 +4,23 @@
 \alias{RNAcurve}
 \title{Plot RNA-seq curves}
 \usage{
-RNAcurve(datmat, exonset, indlist = NULL, colmat = NULL,
-  plot.title = "data", title.cex = 1.5, yaxis.logcount = NULL,
-  same.yaxis = TRUE, mean.plot = TRUE, xlab = NULL, ylab = NULL,
-  xlim = NULL, ylim = NULL, ep.col = NULL, ...)
+RNAcurve(
+  datmat,
+  exonset,
+  indlist = NULL,
+  colmat = NULL,
+  plot.title = "data",
+  title.cex = 1.5,
+  yaxis.logcount = NULL,
+  same.yaxis = TRUE,
+  mean.plot = TRUE,
+  xlab = NULL,
+  ylab = NULL,
+  xlim = NULL,
+  ylim = NULL,
+  ep.col = NULL,
+  ...
+)
 }
 \description{
 Plot RNA-seq curves

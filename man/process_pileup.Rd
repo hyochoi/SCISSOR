@@ -4,8 +4,13 @@
 \alias{process_pileup}
 \title{Processing data}
 \usage{
-process_pileup(pileupData, Ranges, logshiftVal = NULL,
-  plotNormalization = FALSE, ...)
+process_pileup(
+  pileupData,
+  Ranges,
+  logshiftVal = NULL,
+  plotNormalization = FALSE,
+  ...
+)
 }
 \arguments{
 \item{pileupData}{a pile-up data matrix obtained from bam files, i.e. base-level

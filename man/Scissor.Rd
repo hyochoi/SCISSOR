@@ -5,8 +5,15 @@
 \title{This function is a wrapper of the necessary functions to detect RNA-seq shape
 changes at a single gene in a single command.}
 \usage{
-Scissor(pileupData, Ranges, siglev = 1e-04, logshiftVal = NULL,
-  windowSize = 50, plotNormalization = TRUE, reducedReturn = FALSE)
+Scissor(
+  pileupData,
+  Ranges,
+  siglev = 1e-04,
+  logshiftVal = NULL,
+  windowSize = 50,
+  plotNormalization = TRUE,
+  reducedReturn = FALSE
+)
 }
 \arguments{
 \item{pileupData}{a pile-up data matrix obtained from bam files, i.e. base-level

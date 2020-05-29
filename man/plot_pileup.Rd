@@ -4,10 +4,23 @@
 \alias{plot_pileup}
 \title{Plot pileup profiles}
 \usage{
-plot_pileup(Pileup, Ranges, cases = NULL, logcount = NULL,
-  plot.meanpileup = TRUE, col.pileup = NULL, col.meanpileup = "grey",
-  main = NULL, cex.main = 1.2, print.ranges = TRUE, xlim = NULL,
-  ylim = NULL, xlab = NULL, ylab = NULL, ...)
+plot_pileup(
+  Pileup,
+  Ranges,
+  cases = NULL,
+  logcount = NULL,
+  plot.meanpileup = TRUE,
+  col.pileup = NULL,
+  col.meanpileup = "grey",
+  main = NULL,
+  cex.main = 1.2,
+  print.ranges = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  xlab = NULL,
+  ylab = NULL,
+  ...
+)
 }
 \arguments{
 \item{Pileup}{a pileup object with rows for genomic positions and columns for
@@ -46,7 +59,7 @@ locus ranges (\code{\link{get_Ranges}}) should be printed in x-axis.}
 \code{plot_pileup} plots read counts of pileup coverage at base resolution.
 }
 \examples{
-\\donotrun{
+\donotrun{
 plot_pileup(Pileup=ScissorOutput$logData,Ranges=Ranges,cases=2,logcount=10)
 }
 

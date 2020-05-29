@@ -4,8 +4,14 @@
 \alias{get_offstat}
 \title{Quantifying abnormal deletions in narrow regions}
 \usage{
-get_offstat(residualData, pileupData, exonset, ADcutoff = 3,
-  windowSize = 100, readconstr = 10)
+get_offstat(
+  residualData,
+  pileupData,
+  exonset,
+  ADcutoff = 3,
+  windowSize = 100,
+  readconstr = 10
+)
 }
 \description{
 This function quantifies abnormality associated with

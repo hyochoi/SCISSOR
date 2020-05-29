@@ -4,9 +4,16 @@
 \alias{read_BAM}
 \title{Read BAM files into R}
 \usage{
-read_BAM(BAMfiles, caseIDs = NULL, gaf = NULL, symbol = NULL,
-  regions = NULL, outputType = "part_intron",
-  strand.specific = FALSE, ...)
+read_BAM(
+  BAMfiles,
+  caseIDs = NULL,
+  gaf = NULL,
+  symbol = NULL,
+  regions = NULL,
+  outputType = "part_intron",
+  strand.specific = FALSE,
+  ...
+)
 }
 \arguments{
 \item{regions}{genomic regions formatted as chr1:1-100,200-300:+"}
