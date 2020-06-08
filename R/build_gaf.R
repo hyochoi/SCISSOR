@@ -49,7 +49,7 @@ build_gaf = function(Gene,GTF.file=NULL,hg.ref=c("hg19","hg38")) {
     # read.gtf(ens,GTF.file, useBasedir=FALSE) ## read.gtf does not accept gtf.gz: gunzip it.
     # tmp = getGtf(extractByGeneName(ens,Gene))
     # tmp = getGtf(extractByGeneId(ens,geneid$GENEID))
-    tmp.bed = tmp[tmp$feature=="exon",c("seqid","start","end","strand")]
+    # tmp.bed = tmp[tmp$feature=="exon",c("seqid","start","end","strand")]
     exondata = data.frame(reduce(GRanges(tmp.bed)))
     if (sum(!grepl(pattern="chr",exondata$seqnames))>0) {
       exondata$seqnames[(!grepl(pattern="chr",exondata$seqnames))] = paste("chr",exondata$seqnames[(!grepl(pattern="chr",exondata$seqnames))],sep="")
