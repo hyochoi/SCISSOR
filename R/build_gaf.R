@@ -1,63 +1,55 @@
 #' Build gene annotation
 #'
-#' Get genome ranges (exons) for a given gene from UCSC or a given GTF file.
+#' Get genome ranges (exons) for a given gene from a given GTF file.
 #'
-#' @param Gene character(1) identifying the gene symbol, e.g. \code{"TP53"}
+#' @param Gene character(1) identifying the gene symbol for gene list, e.g. \code{"TP53"}
 #' @param GTF.file GTF file name (with full directory). If NULL, UCSC annotation
 #'   databases will be used.
-#' @param hg.ref either "hg19" or "hg38", which will be used for UCSC annotation
-#'   databases. By default, hg19 is used.
 #'
 #' @examples
-#' build_gaf(Gene="TP53")
+#' GTF.file = "genes.gtf"
+#' regions = build_gaf(Gene=genelist[1:100],GTF.file=GTF.file)
+#' write.table(x=regions,file="genes_gaf.txt",sep="\t",quote=F,col.names=F,row.names=F)
 #'
-#' @import BiocManager GenomicRanges
+#' @import BiocManager GenomicRanges ballgown
 #' @export
-build_gaf = function(Gene,GTF.file=NULL,hg.ref=c("hg19","hg38")) {
-  if (missing(Gene)) {
-    stop("Gene symbol is missing")
-  }
-  if (length(Gene)>1) {
-    warning("More than one gene was provided. The first gene will be used.")
-    Gene=Gene[1]
-  }
+build_gaf = function(Gene,GTF.file=NULL) {
+  require(ballgown)
+  require(GenomicRanges)
 
-  if (is.null(GTF.file)) {
-  #   exons=c()
-  #   require(org.Hs.eg.db)
-  #   hg.ref = match.arg(hg.ref, choices=c("hg19","hg38"))
-  #
-  #   if (hg.ref=="hg19") {
-  #     require(TxDb.Hsapiens.UCSC.hg19.knownGene)
-  #     txdb = TxDb.Hsapiens.UCSC.hg19.knownGene
-  #   } else {
-  #     require(TxDb.Hsapiens.UCSC.hg38.knownGene)
-  #     txdb = TxDb.Hsapiens.UCSC.hg38.knownGene
-  #   }
-  #
-  #   geneid = select(org.Hs.eg.db, keys=Gene, columns=c("ENTREZID"),keytype="SYMBOL")
-  #   ebg = exonsBy(txdb, by="gene") ## Once loaded, can be used at multiple instances
-  #   exondata = data.frame(reduce(ebg[which(names(ebg)==as.character(geneid[2]))]))
-  #   exons = paste(exondata$seqnames[1],paste(paste(exondata$start,exondata$end,sep="-"),collapse=","),
-  #                 exondata$strand[1],sep=":")
-  } else {
-    # require(refGenome)
-    # require(GenomicRanges)
-    #
-    # ens = ensemblGenome()
-    # # GTF
-    # read.gtf(ens,GTF.file, useBasedir=FALSE) ## read.gtf does not accept gtf.gz: gunzip it.
-    # tmp = getGtf(extractByGeneName(ens,Gene))
-    # tmp = getGtf(extractByGeneId(ens,geneid$GENEID))
-    # tmp.bed = tmp[tmp$feature=="exon",c("seqid","start","end","strand")]
-    exondata = data.frame(reduce(GRanges(tmp.bed)))
-    if (sum(!grepl(pattern="chr",exondata$seqnames))>0) {
-      exondata$seqnames[(!grepl(pattern="chr",exondata$seqnames))] = paste("chr",exondata$seqnames[(!grepl(pattern="chr",exondata$seqnames))],sep="")
+  gtfdf = gffRead(GTF.file)
+  cols = c("seqname","start","end","strand")
+  if (! "seqname" %in% colnames(gtfdf)) {
+    if ("seqid" %in% colnames(gtfdf)) {
+      cols = c("seqid","start","end","strand")
+    } else {
+      stop("seqid is not available")
     }
+  }
+  genes = getAttributeField(gtfdf$attributes,"gene_name")
+  genes = sapply(genes,function(x) substr(x, 2, nchar(x)-1))
+
+  ## Obtain for all genes
+  get_exons = function(Gene,gtfdf,genes,cols) {
+    tmp = gtfdf[which(genes==Gene),]
+    tmp.bed = tmp[tmp$feature=="exon",cols]
+
+    ## collect exons
+    exondata = data.frame(reduce(GRanges(tmp.bed)))
     exons = paste(exondata$seqnames[1],paste(paste(exondata$start,exondata$end,sep="-"),collapse=","),
                   exondata$strand[1],sep=":")
+    return(exons)
   }
 
-  return(exons)
-}
+  if (is.null(Gene)) {
+    genelist = unique(genes)
+    cat(paste("Gene is not specified and all genes in GTF.file will be processed."),"\n")
+    cat(paste("\t Number of genes =",length(genelist)),"\n")
+  } else {
+    genelist = Gene
+  }
 
+  exons = sapply(genelist,function(x) get_exons(Gene=x,gtfdf=gtfdf,genes=genes,cols=cols))
+  regions = data.frame(Genes=genelist,regions=exons)
+  return(regions)
+}
