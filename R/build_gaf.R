@@ -1,6 +1,6 @@
 #' Build gene annotation
 #'
-#' Get genome ranges (exons) for a given gene from a given GTF file.
+#' Get genome ranges (exons) for a given gene from a GTF file.
 #'
 #' @param Gene character(1) identifying the gene symbol for gene list, e.g. \code{"TP53"}
 #' @param GTF.file GTF file name (with full directory). If NULL, UCSC annotation
@@ -11,12 +11,15 @@
 #' regions = build_gaf(Gene=genelist[1:100],GTF.file=GTF.file)
 #' write.table(x=regions,file="genes_gaf.txt",sep="\t",quote=F,col.names=F,row.names=F)
 #'
-#' @import BiocManager GenomicRanges ballgown
+#' @import GenomicRanges ballgown
 #' @export
 build_gaf = function(Gene,GTF.file=NULL) {
   require(ballgown)
   require(GenomicRanges)
 
+  if (is.null(GTF.file)) {
+    stop("GTF.file must be specified.")
+  }
   gtfdf = gffRead(GTF.file)
   cols = c("seqname","start","end","strand")
   if (! "seqname" %in% colnames(gtfdf)) {
