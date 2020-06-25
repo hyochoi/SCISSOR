@@ -175,7 +175,7 @@ get_offstat= function(residualData,pileupData,exonset,ADcutoff=3,
   residualData = sweep(residualData,2,mad.overall,"/");
 
   medvec.case = apply(pileupData[exon.base,],2,median)
-  medvec.case01 = rep(0,n2); medvec.case01[which(medvec.case>10)]=1;
+  medvec.case01 = rep(0,n2); medvec.case01[which(medvec.case>10)]=1
   window_min = rollapply(medvec,width=windowSize,FUN=min) # min of med
   # window_mean = rollapply(medvec,width=windowSize,FUN=mean)
 
@@ -202,26 +202,17 @@ get_offstat= function(residualData,pileupData,exonset,ADcutoff=3,
   pdrate = matrix(0,nrow=length(window_site),ncol=ncol(residualData))
   tMOD=matrix(0,nrow=nrow(pileupData),ncol=n2) # temp MOD
   tNPS=matrix(0,nrow=n2,ncol=n2) # temp NPS
-  if (length(window_site)>0) {
+  if ((length(window_site)>0) & (length(which(medvec.case01==1))>30)) {
     for (i in which((window_site>100) & (window_site<(nrow(residualData)-100)))) {
-      carea = c((window_site[i]):(window_site[i]-1+window_size[i]));
-      # pdrate[i,] = pd.rate.hy(-apply(residualData[carea,],2,sum),qrsc=T);
-      pdrate[i,] = pd.rate.hy(-apply(residualData[carea,],2,sum),qrsc=F);
+      carea = c((window_site[i]):(window_site[i]-1+window_size[i]))
+      # pdrate[i,] = pd.rate.hy(-apply(residualData[carea,],2,sum),qrsc=T)
+      pdrate[i,which(medvec.case01==1)] = pd.rate.hy(-apply(residualData[carea,which(medvec.case01==1)],2,sum),qrsc=F)
     }
-    outdir = which(apply(pdrate,1,ADstatWins.hy)>=ADcutoff)
+    outdir = which(apply(pdrate[,which(medvec.case01==1)],1,ADstatWins.hy)>=ADcutoff)
     pdrate[outdir,]=0
 
-    pdrate2 = sweep(pdrate,2,medvec.case01,"*")
-    # inner.std=function(x) {
-    #   m=mad(x)
-    #   if (m>1) {
-    #     return(x/m)
-    #   } else {
-    #     return(x)
-    #   }
-    # }
-    # pdrate3=apply(pdrate2,2,inner.std)
-    pdrate3=pdrate2
+    # pdrate2 = sweep(pdrate,2,medvec.case01,"*")
+    pdrate3 = pdrate
     off_stat = apply(pdrate3,2,max)
     where_on = apply(pdrate3,2,which.max)
 
