@@ -48,7 +48,7 @@ install_github("hyochoi/SCISSOR")
 library(SCISSOR)
 ```
 
-Installation takes 9-10 mins. 
+Installation takes 5-10 mins. 
 
 **Note:**  
 
