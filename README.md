@@ -1,5 +1,5 @@
 
-# SCISSOR (https://zenodo.org/badge/DOI/10.5281/zenodo.4269205.svg)
+# SCISSOR [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4269205.svg)](https://doi.org/10.5281/zenodo.4269205)
 
 ## Shape Changes In Selecting Sample Outliers in RNA-seq
 
