@@ -31,13 +31,13 @@ Suppose that GTF file have information about our hypothetical gene, "TOY". Then,
 
 ## Get coverage from BAM files
 
-SCISSOR takes base-level pileup for a single gene as an input. If you want to get the pileup data from BAM files, you can use `read_BAM`. Suppose that your BAM files are located under the directory, ~/bamDir/. You can read the part of the BAM files for particular regions of interest into R. Then, the resulting data object **pileup** is a matrix where samples are in columns and genomic coordinates are in rows. If you have IDs for your samples, you can specify them for the argument `caseIDs`. 
+SCISSOR takes base-level pileup for a single gene as an input. If you want to get the pileup data from BAM files, you can use `read_BAM`. Suppose that your BAM files are located under the directory, ~/bamDir/. You can read the part of the BAM files for particular regions of interest into R. Then, the resulting data object **pileupData** is a matrix where samples are in columns and genomic coordinates are in rows. If you have IDs for your samples, you can specify them for the argument `caseIDs`. 
 
 ```r
-BAMfiles=list.files(path="~/bamDir/")
-BAMfilesPath=as.character(sapply(BAMfiles[1:3],function(x) paste(getwd(),x,sep="/")))
-pileup=read_BAM(BAMfiles=bamfilesPath,caseIDs=case.barcodes,
-                symbol=Gene,regions=regions,outputType=outputType)
+BAMfiles = list.files(path="~/bamDir/")
+BAMfilesPath = as.character(sapply(BAMfiles[1:3],function(x) paste(getwd(),x,sep="/")))
+pileupData = read_BAM(BAMfiles=bamfilesPath,caseIDs=case.barcodes,
+                      symbol=Gene,regions=regions,outputType=outputType)
 ```
 
 ## Get genomic ranges for analysis
@@ -45,7 +45,7 @@ pileup=read_BAM(BAMfiles=bamfilesPath,caseIDs=case.barcodes,
 The next important step of SCISSOR is to get genomic ranges for the gene of interest using `get_Ranges`. 
 
 ```r
-outputType="part_intron"
+outputType = "part_intron"
 geneRanges = get_Ranges(Gene=Gene,regions=regions,outputType=outputType)
 ```
 
