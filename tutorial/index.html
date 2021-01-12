@@ -142,7 +142,7 @@ pileupData = read_BAM(BAMfiles=bamfilesPath,caseIDs=case.barcodes,
 <p><img alt="toyrawpileup" src="../images/TOY_log.png" /></p>
 <h2 id="run-scissor">Run SCISSOR</h2>
 <p><code>Scissor</code> is all-in-one function performing transformation, normalization, and the statistical analysis. </p>
-<p>We have base-level pileup data (as the object, <strong>pileup</strong>) and genomic ranges (as the object, <strong>geneRanges</strong>) from the previous steps. <code>Scissor</code> takes these as inputs with other options to  identify various types of structural changes such as abnormal splicing (exon skipping and intron retention), alternative transcription start or termination, small deletions, and etc. You can use <code>Scissor</code> as the following simple command:</p>
+<p>We have base-level pileup data (as the object, <strong>pileupData</strong>) and genomic ranges (as the object, <strong>geneRanges</strong>) from the previous steps. <code>Scissor</code> takes these as inputs with other options to  identify various types of structural changes such as abnormal splicing (exon skipping and intron retention), alternative transcription start or termination, small deletions, and etc. You can use <code>Scissor</code> as the following simple command:</p>
 <pre><code class="language-r">ScissorOutput=Scissor(pileupData=pileupData,Ranges=geneRanges)
 </code></pre>
 <p><code>Scissor</code> performs:</p>
