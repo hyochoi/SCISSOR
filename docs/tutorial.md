@@ -9,11 +9,17 @@ This tutorial is for a single gene analysis with `SCISSOR`. For more information
 
 ## Get gene annotation
 
-If you have gene annotation (genomic coordinates for exons) for your gene, you can skip this step. If this is not the case, you can use `build_gaf` to obtain gene annotation from GTF file. Make sure that you specify a gene symbol, e.g. TP53, as an input in `build_gaf`.
+SCISSOR needs gene annotation (genomic coordinates for exons) for your gene in the following format: 
 
 ```r
-Gene="TP53"
-regions=build_gaf(Gene=Gene,GTF.file="./Homo_sapiens.GRCh37.87.gtf")
+"chr1:1-100,200-300:+"
+```
+
+You can use `build_gaf` to obtain gene annotation from GTF file. Make sure that you specify a gene symbol, e.g. TP53, as an input in `build_gaf`.
+
+```r
+Gene = "TP53"
+regions = build_gaf(Gene=Gene,GTF.file="./Homo_sapiens.GRCh37.87.gtf")
 ```
 
 Suppose that GTF file have information about our hypothetical gene, "TOY". Then, the `build_gaf` gives the exons for the gene "TOY", and the output will be something like:
