@@ -51,7 +51,7 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
   }
   samplist = colnames(Pileup)
   n = ncol(Pileup)
-  exons = Ranges$lRanges[,c(2,3)]
+  exons = matrix(Ranges$lRanges[,c(2,3)],ncol=2)
   if (is.null(cases)) cases = 1:n
   if (!is.numeric(cases)) {
     caseIDs=cases
