@@ -16,7 +16,13 @@ read_BAM(
 )
 }
 \arguments{
-\item{regions}{genomic regions formatted as chr1:1-100,200-300:+"}
+\item{BAMfiles}{a list of BAM file names}
+
+\item{caseIDs}{a list of case IDs in order of BAMfiles}
+
+\item{symbol}{a gene symbol (gene name)}
+
+\item{regions}{genomic regions to read formatted as "chr1:1-100,200-300:+". See also \code{\link{build_gaf}}.}
 
 \item{outputType}{type of intronic region that will be included in output,
 with choices "whole_intron", "part_intron", or "only_exon"; the second is
@@ -28,11 +34,7 @@ the default.}
 Get coverage pileup from BAM files for the provided regions.
 }
 \examples{
-manifest=read.table(file="~/Desktop/HNSC/base/HNSC_RNA_manifest_datastore.txt")
-manifest=manifest[1:10,]
-caseIDs=as.character(manifest[,1])
-BAMfiles=apply(manifest,1,function(x) paste(c("~/Desktop/HNSC_BAM",strsplit(x=as.character(x[2]),split="/")[[1]][c(6,7,8)]),collapse="/"))
-regions="chr17:7571720-7573008,7573927-7574033,7576525-7576657,7576853-7576926,7577019-7577155,7577499-7577608,7578177-7578289,7578371-7578554,7579312-7579590,7579700-7579721,7579839-7579940:-"
+regions="chr1:1-100,200-300:+"
 start_time = Sys.time()
 countPileup = read_BAM(BAMfiles=BAMfiles,caseIDs=caseIDs,regions=regions)
 end_time = Sys.time()
