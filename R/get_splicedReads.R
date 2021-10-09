@@ -1,3 +1,17 @@
+#' Count splice junction reads from BAM files
+#'
+#' Extract splice junction counts from BAM files for the provided regions.
+#'
+#' @param BAMfiles a list of BAM file names
+#' @param caseIDs a list of case IDs in order of BAMfiles
+#' @param regions genomic regions to read formatted as "chr1:1-100,200-300:+". See also \code{\link{build_gaf}}.
+#'
+#' @examples
+#' regions="chr1:1-100,200-300:+"
+#' start_time = Sys.time()
+#' countPileup = read_SRcount(BAMfiles=BAMfiles,caseIDs=caseIDs,regions=regions)
+#' end_time = Sys.time()
+#' end_time - start_time
 #' @export
 get_SRcount = function(BAMfiles,caseIDs=NULL,regions=NULL,print.proc=FALSE) {
   if (missing(BAMfiles)) {
