@@ -69,7 +69,6 @@ build_gaf <- function(GTF.file=NULL, output.file=NULL) {
                 paste(c(100*round(isp/length(gtfGenes_distinct_split),digits=2),"%")))),"\n")
   }
   all.regions <- do.call("rbind",exons_subset)
-  return(all.regions)
   if (! is.null(output.file)) {
     write.table(x=all.regions,
                 file=output.file,
@@ -81,4 +80,5 @@ build_gaf <- function(GTF.file=NULL, output.file=NULL) {
                 sep="\t",quote=F,row.names=F)
     cat(paste(paste0(dirname(GTF.file),"/SCISSOR_gaf.txt"),"has been created"),"\n")
   }
+  return(all.regions)
 }
