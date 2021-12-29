@@ -32,18 +32,26 @@ BuildExonsFromGTF_GeneSelection <- function(geneList = NULL, GTFfile = NULL, out
     stop("GTFfile must be specified.")
   }
   
-  if (!is.null(geneList)) {
-    # subsetting GTF for gene selection
-    write.table(stringr::str_to_title(geneList), paste0(dirname(GTFfile),"/temp_genelist.txt"), 
-                col.names = FALSE, row.names = FALSE, quote = FALSE)
-    system(paste0("grep -w -f ", dirname(GTFfile), "/temp_genelist.txt ", GTFfile, " > ", 
-    dirname(GTFfile), "/temp.gtf"))
+  if (file.exists(GTFfile)) {
     
-    GTFfile_temp <- paste0(dirname(GTFfile),"/temp.gtf")
+    if (!is.null(geneList)) {
+      
+        # subsetting GTF for gene selection
+        write.table(stringr::str_to_title(geneList), paste0(dirname(GTFfile),"/temp_genelist.txt"),
+                    col.names = FALSE, row.names = FALSE, quote = FALSE)
+        system(paste0("grep -w -i -f ", dirname(GTFfile), "/temp_genelist.txt ", GTFfile, " > ", 
+                      dirname(GTFfile), "/temp.gtf"))
+        
+        GTFfile_temp <- paste0(dirname(GTFfile),"/temp.gtf")
+      } else {
+        # reading for all genes in GTF file
+        GTFfile_temp <- GTFfile
+      }
+    
   } else {
-    # reading for all genes in GTF file
-    GTFfile_temp <- GTFfile
+    stop("GTFfile does not exist.")
   }
+  
  
   gtfdf <- gffRead(GTFfile_temp)
   
