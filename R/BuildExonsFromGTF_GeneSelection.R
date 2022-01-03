@@ -63,8 +63,13 @@ BuildExonsFromGTF_GeneSelection <- function(geneList = NULL, GTFfile = NULL, out
       tidyr::separate(attributes, c("gene_id","etc"), sep = ";", remove = FALSE) %>%
       dplyr::group_by(gene_id) %>%
       dplyr::mutate(source_priority = case_when(source == "ensembl_havana" ~ 3,
+                                                source == "ensembl-havana" ~ 3,
+                                                source == "ENSEMBL-HAVANA" ~ 3,
+                                                source == "ENSEMBL_HAVANA" ~ 3,
                                                 source == "ensembl" ~ 2,
+                                                source == "ENSEMBL" ~ 2,
                                                 source == "havana" ~ 1,
+                                                source == "HAVANA" ~ 1,
                                                 TRUE ~ 0)) %>%
       dplyr::mutate(source_select = case_when(source_priority == max(source_priority) ~ 1,
                                               TRUE ~ 0)) %>%
