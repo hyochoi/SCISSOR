@@ -3,7 +3,8 @@
 #'
 #' @param pileupData a pile-up data matrix obtained from bam files, i.e. base-level
 #'   raw counts. Columns are samples and rows are genomic positions.
-#' @param Ranges an exon annotation for the given gene.
+#' @param Ranges a list of information for genomic regions.
+#'   \code{\link{get_Ranges}}.
 #' @param siglev a significance level for detecting outliers. Default is 1e-4.
 #' @param logshiftVal a pseudo count added to raw counts before the logarithmic
 #'   transformation. Default is NULL and automatically selects the pseudo count
