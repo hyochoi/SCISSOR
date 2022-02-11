@@ -4,20 +4,20 @@
 \alias{build_gaf}
 \title{Build gene annotation}
 \usage{
-build_gaf(Gene, GTF.file = NULL)
+build_gaf(GTF.file = NULL, output.file = NULL)
 }
 \arguments{
-\item{Gene}{character(1) identifying the gene symbol for gene list, e.g. \code{"TP53"}}
-
 \item{GTF.file}{GTF file name (with full directory). If NULL, UCSC annotation
 databases will be used.}
+
+\item{output.file}{an output file name where the gene annotation ranges will be saved}
 }
 \description{
-Get genome ranges (exons) for a given gene from a GTF file.
+Get gene annotation ranges (exons) for all genes from a GTF file.
 }
 \examples{
 GTF.file = "genes.gtf"
-regions = build_gaf(Gene=genelist[1:100],GTF.file=GTF.file)
-write.table(x=regions,file="genes_gaf.txt",sep="\t",quote=F,col.names=F,row.names=F)
+regions = build_gaf(GTF.file=GTF.file)
+write.table(x=regions,file="genes_gaf.txt",sep="\t",quote=F,row.names=F)
 
 }

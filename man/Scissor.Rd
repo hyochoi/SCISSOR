@@ -19,7 +19,8 @@ Scissor(
 \item{pileupData}{a pile-up data matrix obtained from bam files, i.e. base-level
 raw counts. Columns are samples and rows are genomic positions.}
 
-\item{Ranges}{an exon annotation for the given gene.}
+\item{Ranges}{a list of information for genomic regions.
+\code{\link{get_Ranges}}.}
 
 \item{siglev}{a significance level for detecting outliers. Default is 1e-4.}
 
