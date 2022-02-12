@@ -27,7 +27,6 @@ This function is used to get pileup data based on new transcript for the
 purpose of the downstream outlier detection analysis.
 }
 \examples{
-package_path = "~/Dropbox/Research/hyochoi_GitHub/"
 regions = "chrQ:7571719-7572198,7574858-7575157,7598088-7598437:-"
 countPileup = build_pileup(Pileup=paste0(package_path,"SCISSOR/toydata/TOY_coverage.txt"),inputType="whole_intron",caseIDs=NULL,regions=regions)
 
