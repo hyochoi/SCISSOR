@@ -46,7 +46,7 @@ build_pileup = function(Pileup,caseIDs=NULL,regions,
             ep.new = find.exon.hy(regions,is.intron=TRUE,num.intron=intron.len) ;
             covPileup = rawPileup;
         } else if (outputType=="part_intron") {
-            intron.len = ceiling(len.intron.hy(exon=regions)*0.5);
+            intron.len = ceiling(len.intron.hy(regions=regions)*0.5);
             ep.new = find.exon.hy(regions,is.intron=TRUE,num.intron=intron.len) ;
             covPileup = rawPileup[ep.new$coverage.col,] ;    #   Area to be included.
         } else if (outputType=="only_exon") {
