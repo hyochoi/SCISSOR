@@ -7,5 +7,5 @@
 len.intron.hy(exon)
 }
 \description{
-Find intron length to be inserted
+This function computes the average length of introns to be included in the SCISSOR analysis
 }
