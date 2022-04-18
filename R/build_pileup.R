@@ -46,7 +46,7 @@ build_pileup = function(Pileup,caseIDs=NULL,regions,
             ep.new = find.exon.hy(regions,is.intron=TRUE,num.intron=intron.len) ;
             covPileup = rawPileup;
         } else if (outputType=="part_intron") {
-            intron.len = ceiling(len.intron.hy(regions=regions)*0.5);
+            intron.len = ceiling(len.intron.hy(regions)*0.5);
             ep.new = find.exon.hy(regions,is.intron=TRUE,num.intron=intron.len) ;
             covPileup = rawPileup[ep.new$coverage.col,] ;    #   Area to be included.
         } else if (outputType=="only_exon") {
@@ -62,13 +62,13 @@ build_pileup = function(Pileup,caseIDs=NULL,regions,
         if (outputType=="whole_intron") {
             stop(outputType," is not an option when inputType=part_intron.")
         } else if (outputType=="part_intron") {
-            intron.len = ceiling(len.intron.hy(exon=regions)*0.5);
+            intron.len = ceiling(len.intron.hy(regions)*0.5);
             ep.new = find.exon.hy(regions,is.intron=TRUE,num.intron=intron.len) ;
             covPileup = rawPileup ;    #   Area to be included.
             ##### If the dimension of the given pileup data is not equal to the expected one
             ##### from the intron.len calculated, should display an error. Fix this!
         } else if (outputType=="only_exon") {
-            intron.len.temp = ceiling(len.intron.hy(exon=regions)*0.5);
+            intron.len.temp = ceiling(len.intron.hy(regions)*0.5);
             ep.new.temp = find.exon.hy(regions,is.intron=TRUE,num.intron=intron.len.temp) ;
 
             exonic.region = c()
