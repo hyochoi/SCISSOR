@@ -1,10 +1,9 @@
+#' @import stringr
 #'
 #' @export
 get_junctions = function(jsrCount,Ranges) {
   ## jsrCount = n by 1 matrix with junction-split read counts
   ## each row for each sample
-  require(stringr)
-  require(zoo)
 
   lRanges = Ranges$lRanges
   jsrCount2 = jsrCount[,1]

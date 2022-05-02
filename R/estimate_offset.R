@@ -1,5 +1,4 @@
 #'
-#' @export
 estimate_offset = function(centerDataResult=NULL,msf=NULL,centeredData=NULL,
                            pileupData,exonset,
                            smoothness=0.7,

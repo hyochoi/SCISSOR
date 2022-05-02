@@ -1,6 +1,5 @@
 #' written by ------
 #'
-#' @export
 generdir=function(X,ndir){
   # Generates `ndir' directions (with unit norm),
   # orthogonal to d-subsets of X

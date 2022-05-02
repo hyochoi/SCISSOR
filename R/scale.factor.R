@@ -6,7 +6,7 @@
 #' @param average
 #'
 #' @export
-scale.factor=function(X,average="mean",trim=0.1,adjval=NULL,robustLM=FALSE) {
+scale.factor <- function(X,average="mean",trim=0.1,adjval=NULL,robustLM=FALSE) {
   mean.vec = apply(X,1,FUN=function(x){adj.center(x,average=average,trim=trim,adjval=adjval)})
   if (sum(mean.vec^2)>0) {
     if (robustLM) {

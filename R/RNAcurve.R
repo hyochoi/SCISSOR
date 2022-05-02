@@ -1,5 +1,4 @@
 #' Plot RNA-seq curves
-#' @export
 RNAcurve = function(datmat,exonset,indlist=NULL,colmat=NULL,
                     plot.title="data",title.cex=1.5,
                     yaxis.logcount=NULL,same.yaxis=TRUE,

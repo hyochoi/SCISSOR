@@ -1,4 +1,6 @@
 #' kernel density function
+#' @import KernSmooth Lmoments moments nortest
+#'
 #' @export
 kdeplot.hy <- function(x, bandwidth=NULL, indlist=NULL, indlist2=NULL,
                        colmat=NULL,indcol1="red", indcol2="cadetblue",
@@ -9,7 +11,7 @@ kdeplot.hy <- function(x, bandwidth=NULL, indlist=NULL, indlist2=NULL,
                        ADlegend=FALSE,...){
   ##  Based on 'kdeplotls' from Lingsong's software
   ##  Widen the height of points
-  require('KernSmooth') ; require("Lmoments"); require("moments"); require("nortest");
+  # require('KernSmooth') ; require("Lmoments"); require("moments"); require("nortest");
   if (is.null(bandwidth)){
     x.kde <- bkde(x)
   }

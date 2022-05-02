@@ -14,7 +14,7 @@
 #' If NULL, the cutoff value is computed based on the specified siglev.
 #' @param reducedReturn
 #'
-#' @import zoo
+#' @importFrom zoo rollapply rollmean
 #' @export
 miscLocal = function(miscGlobalResult,pileupData,Ranges,
                      siglev=1e-4,cutoff=NULL,
@@ -83,6 +83,7 @@ miscLocal = function(miscGlobalResult,pileupData,Ranges,
 #' This function identifies local shape variants by mining locally on/off abnormalities.
 #'
 #'
+#' @importFrom zoo rollapply rollmean
 #' @export
 detect_localout = function(residualData,pileupData,exonset,
                            siglev=NULL,cutoff=NULL,ADcutoff=3,
@@ -152,11 +153,11 @@ detect_localout = function(residualData,pileupData,exonset,
 #' Quantifying abnormal deletions in narrow regions
 #'
 #' This function quantifies abnormality associated with
+#' @importFrom zoo rollapply rollmean
 #' @export
 get_offstat= function(residualData,pileupData,exonset,ADcutoff=3,
                       windowSize=100,readconstr=10) {
   ## Step 2 : detect "off" outliers
-  require(zoo)
   # Find eligible regions
   n2 = ncol(residualData)
   medvec = apply(pileupData,1,median)
@@ -176,8 +177,8 @@ get_offstat= function(residualData,pileupData,exonset,ADcutoff=3,
 
   medvec.case = apply(pileupData[exon.base,],2,median)
   medvec.case01 = rep(0,n2); medvec.case01[which(medvec.case>10)]=1
-  window_min = rollapply(medvec,width=windowSize,FUN=min) # min of med
-  # window_mean = rollapply(medvec,width=windowSize,FUN=mean)
+  window_min = zoo::rollapply(medvec,width=windowSize,FUN=min) # min of med
+  # window_mean = zoo::rollapply(medvec,width=windowSize,FUN=mean)
 
   window_idx0 = which(window_min>=readconstr)
   window_idx1 = window_idx0[which(window_idx0 %in% exon.base)]
@@ -231,6 +232,7 @@ get_offstat= function(residualData,pileupData,exonset,ADcutoff=3,
 }
 
 #'
+#' @importFrom zoo rollapply rollmean
 #' @export
 get_exon_offstat= function(residualData,pileupData,exonset,ADcutoff=3) {
 
@@ -281,6 +283,7 @@ get_exon_offstat= function(residualData,pileupData,exonset,ADcutoff=3) {
 }
 
 #'
+#' @importFrom zoo rollapply rollmean
 #' @export
 get_exon_onstat= function(residualData,pileupData,exonset,readconstr=10) {
 
@@ -343,6 +346,7 @@ get_exon_onstat= function(residualData,pileupData,exonset,readconstr=10) {
 }
 
 #'
+#' @importFrom zoo rollapply rollmean
 #' @export
 get_intron_onstat= function(residualData,pileupData,exonset,readconstr=10) {
 

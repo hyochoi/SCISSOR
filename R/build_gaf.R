@@ -11,17 +11,16 @@
 #' regions = build_gaf(GTF.file=GTF.file)
 #' write.table(x=regions,file="genes_gaf.txt",sep="\t",quote=F,row.names=F)
 #'
-#' @import GenomicRanges ballgown dplyr
+#' @import GenomicRanges
+#' @importFrom ballgown getAttributeField gffRead
+#' @importFrom dplyr distinct
 #' @export
 build_gaf <- function(GTF.file=NULL, output.file=NULL) {
-  require(ballgown)
-  require(GenomicRanges)
-  require(dplyr)
 
   if (is.null(GTF.file)) {
     stop("GTF.file must be specified.")
   }
-  gtfdf <- gffRead(GTF.file)
+  gtfdf <- ballgown::gffRead(GTF.file)
   cols <- c("seqname","start","end","strand")
   if (! "seqname" %in% colnames(gtfdf)) {
     if ("seqid" %in% colnames(gtfdf)) {
@@ -43,14 +42,14 @@ build_gaf <- function(GTF.file=NULL, output.file=NULL) {
     return(exons)
   }
 
-  genes <- getAttributeField(gtfdf$attributes,"gene_name")
+  genes <- ballgown::getAttributeField(gtfdf$attributes,"gene_name")
   genes <- sapply(genes,function(x) substr(x, 2, nchar(x)-1))
-  geneids <- getAttributeField(gtfdf$attributes,"gene_id")
+  geneids <- ballgown::getAttributeField(gtfdf$attributes,"gene_id")
   geneids <- sapply(geneids,function(x) substr(x, 2, nchar(x)-1))
   gtfGenes <- data.frame(gene_name=genes, gene_id=geneids)
 
   ## Parallel approach
-  gtfGenes_distinct = distinct(gtfGenes)
+  gtfGenes_distinct = dplyr::distinct(gtfGenes)
   cat(paste("\t Number of genes =",dim(gtfGenes_distinct)[1]),"\n")
 
   seqsplit <- rep(1:(round(dim(gtfGenes_distinct)[1]/1000)+1),each=1000)

@@ -1,5 +1,4 @@
 #'
-#' @export
 compScales = function(x,
                       rmZeroes=FALSE,maxRatio=NULL,precScale=1e-10){
   # Computes the scales sa and sb (above and below the median).

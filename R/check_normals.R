@@ -1,5 +1,4 @@
 #'
-#' @export
 check_normals = function(normal.data,exon,out1=NULL,out2=NULL,
                          data.process=NULL,global.out=NULL,local.out=NULL,
                          input.type="part_intron",output.type="part_intron",intron.len=NULL,

@@ -4,7 +4,6 @@
 #'
 #' @param x an input vector
 #'
-#' @export
 ADstat.hy=function(x){
   n = length(x);
   if (n < 7){

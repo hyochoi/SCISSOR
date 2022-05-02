@@ -61,7 +61,6 @@ plot_pileup = function(Pileup,Ranges,cases=NULL,logcount=NULL,
     }
   }
 
-  require("RColorBrewer")
   candicol1 = c(brewer.pal(9,"Pastel1")[6], # candidate colors for exonic regions
                 brewer.pal(8,"Pastel2")[6],
                 brewer.pal(9,"YlOrBr")[1],

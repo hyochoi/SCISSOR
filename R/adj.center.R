@@ -7,7 +7,6 @@
 #' Default is "median".
 #' @param adjval the lower bound above which the values will be included to calculate the center.
 #'
-#' @export
 adj.center = function(x,average="mean",trim=0.1,adjval=NULL) {
   ##  % Obtain adjusted center (mean or median)
   if (is.null(adjval)) {

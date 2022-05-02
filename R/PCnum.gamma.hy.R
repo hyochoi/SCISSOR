@@ -1,15 +1,14 @@
+#' Estimate the number principal components for RNA-seq
 #'
 #' @param eps tuning parameter for estimating the number of PCs. If NULL
 #'   (default), eps = (1/nrow(data))
 #'
 #' @import nloptr
-#' @export
 PCnum.gamma.hy = function(eigenval,d,n,eps=1e-4){
   # Third version - consider jth eigenvalue as a spike only if it is larger than a criteria
   #                   using (j+2)th to last eigenvalues.
   #                   Previous version used (j+1)th to last eigenvalues
   # Determine the number of spikes when the underlying distribution for PSD is a truncated gamma(shape,rate)
-  require(nloptr);
   lss.gamma = function(theta,m,xi=(1-1e-4)){
     # m = ESD moments in vector
     k = theta[1]; scl = 1/theta[2]; # k=shape; lam=scale

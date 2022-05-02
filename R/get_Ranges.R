@@ -21,11 +21,10 @@
 #' regions="chr17:7571720-7573008,7573927-7574033,7576525-7576657,7576853-7576926,7577019-7577155,7577499-7577608,7578177-7578289,7578371-7578554,7579312-7579590,7579700-7579721,7579839-7579940:-"
 #' Ranges=get_Ranges(Gene="TP53",regions=regions,outputType="part_intron")
 #'
-#' @import BiocManager Rsamtools
+#' @import Rsamtools
 #' @export
 get_Ranges = function(Gene=NULL,regions=NULL,GTF.file=NULL,hg.ref=c("hg19","hg38"),outputType="part_intron") {
 
-  require(Rsamtools)
   if (!is.null(Gene)) {
     if (length(Gene)>1) {
       warning("More than one gene was provided. The first gene will be used.")

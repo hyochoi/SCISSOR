@@ -5,7 +5,6 @@
 #'
 #' @param x an input vector
 #'
-#' @export
 ADstatWins.hy=function(x,trim=NULL){
   # Winsorize and calculate Anderson Darling test statistic
   if (!is.null(trim)) {

@@ -1,7 +1,7 @@
 #'
 #' @export
 angle.hy = function(x,y,perp=TRUE){
-  
+
   angle2.hy=function(xx,y,perp=TRUE){
     sumx2 = sum(xx^2); sumy2 = sum(y^2)
     if ((sumx2>0) & (sumy2>0)) {
