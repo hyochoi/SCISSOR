@@ -12,7 +12,7 @@
 #' write.table(x=regions,file="genes_gaf.txt",sep="\t",quote=F,row.names=F)
 #'
 #' @import GenomicRanges
-#' @importFrom ballgown getAttributeField gffRead
+# #' @importFrom ballgown getAttributeField gffRead
 #' @importFrom dplyr distinct
 #' @export
 build_gaf <- function(GTF.file=NULL, output.file=NULL) {
