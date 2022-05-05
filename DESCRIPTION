@@ -12,7 +12,6 @@ Imports:
   wesanderson,
   nloptr,
   zoo,
-  BiocManager,
   GenomicRanges,
   Rsamtools,
   stringr,
