@@ -69,7 +69,7 @@ read_aBAM = function(BAM,regions=NULL,strand.specific=FALSE,...) {
   df = GenomicRanges::GRanges(chr,IRanges(start=as.numeric(strtend[,1]), end=as.numeric(strtend[,2])),strnd)
 
   # https://www.rdocumentation.org/packages/Rsamtools/versions/1.24.0/topics/pileup
-  s_param = RSamtools::ScanBamParam(which=df, what=c("pos"))
+  s_param = Rsamtools::ScanBamParam(which=df, what=c("pos"))
   # p_param = PileupParam(max_depth=1000, min_base_quality = 0, min_mapq = 0, min_nucleotide_depth = 0, min_minor_allele_depth = 0, distinguish_strands = FALSE, distinguish_nucleotides = FALSE, ignore_query_Ns = FALSE, include_deletions = FALSE, include_insertions = FALSE, left_bins = NULL, query_bins = NULL,  cycle_bins = NULL)
   if (!strand.specific) {
     res = pileup(bf, scanBamParam=s_param, pileupParam=PileupParam(distinguish_strands=F,distinguish_nucleotides=F,
