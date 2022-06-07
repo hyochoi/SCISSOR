@@ -22,8 +22,14 @@ center_data = function(inputData, Ranges, average="mean",trim=0.1,adjval=NULL, .
     }
   }
   msf.exons = t(exonbaseMat)%*%inputData
-  msf = apply(msf.exons[which(! c(1:nrow(msf.exons)) %in% zeromean),],2,median)
-
+  keepexons = which(! c(1:nrow(msf.exons)) %in% zeromean)
+  if (length(keepexons)>1) {
+    msf = apply(msf.exons[which(! c(1:nrow(msf.exons)) %in% zeromean),],2,median)
+  } else if (length(keepexons)==1) {
+    msf = msf.exons[which(! c(1:nrow(msf.exons)) %in% zeromean),]
+  } else {
+    msf = rep(0,dim(inputData)[2])
+  }
   NewX = inputData - mean.vec%*%t(msf)
   # msf2=rep(1,length(msf))
   # msf2[which(msf>1)]=1/msf[which(msf>1)]

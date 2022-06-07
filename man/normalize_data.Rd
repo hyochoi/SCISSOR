@@ -26,7 +26,7 @@ Default is FALSE}
 \item{Gene}{gene name to print in the plot}
 }
 \description{
-This function reduces the variation associated with sequentcing depths
+This function reduces the variation associated with sequencing depths
 remaining after a log transformation. The output is the main data object for the downstream
 shape change detection \link{miscGlobal}.
 }

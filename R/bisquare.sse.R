@@ -1,4 +1,5 @@
 #'
+#' @export
 bisquare.sse = function(x) {
   sig0 = sd(x)
   if (sig0<1e-10) {
