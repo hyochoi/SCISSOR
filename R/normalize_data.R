@@ -12,9 +12,7 @@
 #' Default is FALSE
 #' @param Gene gene name to print in the plot
 #'
-#' @keywords
 #' @export
-#' @examples
 normalize_data = function(inputData,
                           pileupData,Ranges,
                           smoothness=0.7,
