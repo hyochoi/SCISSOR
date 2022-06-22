@@ -59,7 +59,7 @@ locus ranges (\code{\link{get_Ranges}}) should be printed in x-axis.}
 \code{plot_pileup} plots read counts of pileup coverage at base resolution.
 }
 \examples{
-\donotrun{
+\dontrun{
 plot_pileup(Pileup=ScissorOutput$logData,Ranges=Ranges,cases=2,logcount=10)
 }
 

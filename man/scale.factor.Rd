@@ -8,8 +8,6 @@
 }
 \arguments{
 \item{X}{an input data matrix}
-
-\item{average}{}
 }
 \description{
 This function obtains the mean scale factors

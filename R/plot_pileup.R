@@ -29,7 +29,7 @@
 #' @keywords
 #'
 #' @examples
-#' \donotrun{
+#' \dontrun{
 #' plot_pileup(Pileup=ScissorOutput$logData,Ranges=Ranges,cases=2,logcount=10)
 #' }
 #'
