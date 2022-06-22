@@ -249,7 +249,6 @@ locate_region = function(tag,Ranges,JSR.table) {
 #'
 #' @export
 split_junction = function(x) {
-  require(stringr)
   inner_fun = function(x) {strsplit(x,"~")[[1]]}
   return(sapply(x,inner_fun))
 }
@@ -258,7 +257,6 @@ split_junction = function(x) {
 #' @export
 collapse_junction = function(x) {
   # each row for junction positions
-  require(stringr)
   inner_fun = function(x) {paste(x,collapse="~")}
   if (is.null(dim(x))) {
     return(inner_fun(x))
@@ -271,7 +269,6 @@ collapse_junction = function(x) {
 #' @export
 annotate_junction = function(x,lRanges) {
   # Each row for each junction (in locus)
-  require(stringr)
   nexons = nrow(lRanges)
   inner_fn = function(x,lRanges) {
     ie = which((lRanges[,4]-x[1])*(lRanges[,1]-x[1])<=0)
@@ -318,7 +315,6 @@ annotate_junction = function(x,lRanges) {
 #' @export
 get_JVclass = function(LBE.position) {
   # Get junction variants classes
-  require(stringr)
   inner_fn = function(x) {
     # exon.nums = as.numeric(sapply(apply(split_junction(x),1,FUN=function(z){strsplit(z,":")[[1]][1]}),
     #                               FUN=function(t){strsplit(t,"exon")[[1]][2]}))
@@ -349,7 +345,6 @@ get_JVclass = function(LBE.position) {
 #' @export
 get_Tag = function(LBE.position) {
   # Get tags
-  require(stringr)
   LBE.position = as.character(LBE.position)
   inner_fn = function(x) {
     y = apply(split_junction(x),1,FUN=function(z){strsplit(z,":")[[1]][2]})

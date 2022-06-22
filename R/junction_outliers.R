@@ -309,7 +309,7 @@ boxplot.hy=function(value,robust=FALSE,
                     print.outliers=FALSE,outliers.range=NULL,outliers.text=FALSE,
                     colmat=NULL,outliers.col=NULL,
                     box.col="black",print.plot=TRUE) {
-  require(wesanderson); require(RColorBrewer)
+
   n = length(value)
   qvalue = quantile(value)
   iqr = qvalue[4]-qvalue[2]
@@ -352,7 +352,7 @@ boxplot.hy=function(value,robust=FALSE,
 
       if (!is.null(indlist)) {
         if (is.null(indlist.col)) {
-          indlist.col=wes_palette(n=5,"Darjeeling1")[2]
+          indlist.col=wesanderson::wes_palette(n=5,"Darjeeling1")[2]
         }
         colmat[indlist] = indlist.col;
       }

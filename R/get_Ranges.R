@@ -32,12 +32,13 @@ get_Ranges = function(Gene=NULL,regions=NULL,GTF.file=NULL,hg.ref=c("hg19","hg38
     }
   }
   if (is.null(regions)) {
-    if (is.null(Gene)) {
-      stop("Either Gene or regions must be specified")
-    } else {
-      hg.ref = match.arg(hg.ref, choices=c("hg19","hg38"))
-      regions = build_gaf(Gene=Gene,GTF.file=GTF.file,hg.ref=hg.ref)
-    }
+    stop("regions must be specified")
+    # if (is.null(Gene)) {
+      # stop("Either Gene or regions must be specified")
+    # } else {
+    #   hg.ref = match.arg(hg.ref, choices=c("hg19","hg38"))
+    #   regions = build_gaf(Gene=Gene,GTF.file=GTF.file,hg.ref=hg.ref)
+    # }
   }
   chr = strsplit(regions,":")[[1]][1]
   strtend = do.call(rbind,strsplit(strsplit(strsplit(regions,":")[[1]][2],",")[[1]],"-"))

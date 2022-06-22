@@ -56,33 +56,33 @@ get_SRcount = function(BAMfiles,caseIDs=NULL,regions=NULL,print.proc=FALSE) {
 # bam.jsr = extract_splicedReads(BAM=BAM,gene.locus=gene.locus)
 # p0 = c("qname","flag","rname","pos","mapq","cigar","mrnm","mpos","isize","seq")
 # p1 = c("qname","flag","rname","pos","mapq","cigar")
+#' @import Rsamtools GenomicRanges
 #' @export
 extract_splicedReads = function(BAM,gene.locus,p1=c("qname","flag","rname","pos","mapq","cigar")) {
-  require(Rsamtools)
 
-  bf = BamFile(BAM)
+  bf = Rsamtools::BamFile(BAM)
   chr = strsplit(gene.locus,":")[[1]][1]
   strtend = do.call(rbind,strsplit(strsplit(strsplit(gene.locus,":")[[1]][2],",")[[1]],"-"))
   strnd = strsplit(gene.locus,":")[[1]][3]
-  df = GRanges(chr,IRanges(start=as.numeric(strtend[,1]), end=as.numeric(strtend[,2])),strnd)
-  s_param = ScanBamParam(which=df, what=p1)
+  df = GenomicRanges::GRanges(chr,IRanges(start=as.numeric(strtend[,1]), end=as.numeric(strtend[,2])),strnd)
+  s_param = Rsamtools::ScanBamParam(which=df, what=p1)
 
-  res = scanBam(bf, param=s_param)[[1]]
+  res = Rsamtools::scanBam(bf, param=s_param)[[1]]
   output = data.frame(matrix(unlist(res),ncol=length(res)))
   colnames(output) = p1
   output = output[which(grepl(pattern="N",output$cigar)==T),]
   return(output[which(as.numeric(as.character(output$mapq))>30),])
 }
 
+#' @import stringr
 #' @export
 count_splicedReads=function(splicedReads,regions) {
-  require("stringr")
-  seqdir=unlist(str_split(regions,":"))[3]
+  seqdir=unlist(stringr::str_split(regions,":"))[3]
   splicedReads = splicedReads[which(! as.character(splicedReads$cigar)==""),]
 
   inner_fn=function(rinfo) {
     rpos = as.numeric(as.character(rinfo[1]))
-    rcigar = unlist(str_split(as.character(rinfo[2]),"[M,N]"))
+    rcigar = unlist(stringr::str_split(as.character(rinfo[2]),"[M,N]"))
     if (length(rcigar)==4) {
       rcigar = as.numeric(rcigar)
       y=c((rpos+rcigar[1]-1),
@@ -122,7 +122,7 @@ count_splicedReads=function(splicedReads,regions) {
   # Count spliced reads
   splice.count=rep(0,length(splicing.set))
   for (i in 1:length(splicing.set)) {
-    splice_site=unlist(str_split(splicing.set[i],"~"))
+    splice_site=unlist(stringr::str_split(splicing.set[i],"~"))
     temp.count=length(which((splice.info[,1]==min(splice_site)) & (splice.info[,5]==max(splice_site))))
     splice.count[i]=paste0(splicing.set[i],":",temp.count)
   }

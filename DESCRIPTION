@@ -15,14 +15,14 @@ Imports:
   GenomicRanges,
   Rsamtools,
   stringr,
-  dplyr,
-  nortest,
-  KernSmooth
+  dplyr
 Suggests:
-  knitr,
-  rmarkdown,
+  nortest,
+  KernSmooth,
   moments,
   Lmoments,
+  knitr,
+  rmarkdown,
   ballgown
 License: What license is it under?
 Encoding: UTF-8
